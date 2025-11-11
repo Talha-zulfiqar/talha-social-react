@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Welcome — Talha Web</title>
+    <link rel="stylesheet" href="login.css">
+  </head>
+  <body>
+    <main class="wrap">
+      <section class="card" aria-labelledby="welcome-heading">
+        <h1 id="welcome-heading">Welcome to Talha Web</h1>
+        <p class="subtitle" id="greet">Hello —</p>
+
+        <div class="controls-row" style="margin-top:6px; margin-bottom:18px">
+          <button id="logoutBtn" class="primary" style="width:auto;padding:8px 12px;background:#fff;color:var(--blue);border:1px solid #cfe7ff;">Log out</button>
+        </div>
+
+        <h3 style="margin-top:4px">Give feedback</h3>
+        <form id="feedbackForm">
+          <label class="field">
+            <span class="label">Your feedback</span>
+            <textarea id="feedbackText" rows="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid #d7e7fb;font-size:15px"></textarea>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <button type="submit" class="primary">Send feedback</button>
+        </form>
+
+        <div id="feedbackList" style="margin-top:14px"></div>
+
+      </section>
+    </main>
+
+    <script src="welcome.js"></script>
+  </body>
+</html>
