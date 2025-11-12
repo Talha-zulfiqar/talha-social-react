@@ -9,6 +9,7 @@ function Avatar({name, src, size=40}){
 export default function Feed(){
   const [posts, setPosts] = useState([])
   const [text, setText] = useState('')
+  const [image, setImage] = useState(null)
 
   useEffect(()=>{
     const raw = localStorage.getItem('posts')
@@ -24,9 +25,12 @@ export default function Feed(){
     e.preventDefault()
     if (!text.trim()) return
     const user = sessionStorage.getItem('user') || 'You'
-    const next = [{id:Date.now(), author:user, text:text.trim(), comments:[]}, ...posts]
+    let authorAvatar = null
+    try{ const pr = JSON.parse(localStorage.getItem('profile')||'{}'); authorAvatar = pr && pr.avatar ? pr.avatar : null }catch{}
+    const next = [{id:Date.now(), author:user, avatar: authorAvatar, text:text.trim(), image: image || null, comments:[]}, ...posts]
     save(next)
     setText('')
+    setImage(null)
   }
 
   function addComment(postId, comment){
@@ -35,35 +39,84 @@ export default function Feed(){
   }
 
   return (
-    <section className="card">
-      <h2>Feed</h2>
-
-      <form onSubmit={addPost} style={{marginTop:12}}>
-        <textarea value={text} onChange={e=>setText(e.target.value)} placeholder="What's on your mind?" style={{width:'100%',padding:10,borderRadius:8}} />
-        <div style={{display:'flex',gap:8,marginTop:8}}>
-          <button className="primary" type="submit">Post</button>
+    <div className="layout">
+      <aside className="left-column">
+        <div className="sidebar-card">
+          <h3 style={{marginTop:0}}>Profile</h3>
+          <div style={{display:'flex',gap:12,alignItems:'center'}}>
+            {(() => { try{ const pr = JSON.parse(localStorage.getItem('profile')||'{}'); return pr && pr.avatar ? <img src={pr.avatar} alt="you" style={{width:56,height:56,borderRadius:12}} /> : <div className="avatar-large">{(sessionStorage.getItem('user')||'You').slice(0,2).toUpperCase()}</div> }catch{ return <div className="avatar-large">{(sessionStorage.getItem('user')||'You').slice(0,2).toUpperCase()}</div> } })()}
+            <div>
+              <div style={{fontWeight:700}}>{sessionStorage.getItem('user')||'You'}</div>
+              <div className="muted">View and edit profile</div>
+            </div>
+          </div>
         </div>
-      </form>
+        <div style={{height:12}} />
+        <div className="sidebar-card">
+          <h4 style={{marginTop:0}}>Shortcuts</h4>
+          <ul style={{listStyle:'none',padding:0,margin:0}}>
+            <li className="social fb">Groups</li>
+            <li className="social">Pages</li>
+            <li className="social">Events</li>
+          </ul>
+        </div>
+      </aside>
 
-      <div style={{display:'grid',gap:12,marginTop:18}}>
-        {posts.map(p => (
-          <article key={p.id} className="post-card">
-            <div style={{display:'flex',gap:12,alignItems:'center'}}>
-              <Avatar name={p.author} src={p.avatar} />
-              <div>
-                <div style={{fontWeight:700}}>{p.author}</div>
-                <div className="muted" style={{fontSize:12}}>{new Date(Number(p.id)).toLocaleString()}</div>
-              </div>
-            </div>
-            <div style={{marginTop:10}}>{p.text}</div>
+      <main className="center-column">
+        <section className="card">
+          <h2>Feed</h2>
 
-            <div style={{marginTop:10}}>
-              <Comments comments={p.comments||[]} onAdd={(c)=>addComment(p.id,c)} />
+          <form onSubmit={addPost} style={{marginTop:12}}>
+            <textarea value={text} onChange={e=>setText(e.target.value)} placeholder="What's on your mind?" style={{width:'100%',padding:10,borderRadius:8}} />
+            <div style={{display:'flex',gap:8,marginTop:8,alignItems:'center'}}>
+              <label style={{display:'inline-flex',alignItems:'center',gap:8}} className="btn-logout">
+                <input type="file" accept="image/*" style={{display:'none'}} onChange={async (e)=>{
+                  const f = e.target.files && e.target.files[0]
+                  if(!f) return
+                  const r = new FileReader()
+                  r.onload = ()=> setImage(r.result)
+                  r.readAsDataURL(f)
+                }} />
+                Upload image
+              </label>
+              <button className="primary" type="submit">Post</button>
             </div>
-          </article>
-        ))}
-      </div>
-    </section>
+            {image && <div style={{marginTop:8}}><img src={image} alt="preview" className="post-image" /></div>}
+          </form>
+
+          <div style={{display:'grid',gap:12,marginTop:18}}>
+            {posts.map(p => (
+              <article key={p.id} className="post-card">
+                <div style={{display:'flex',gap:12,alignItems:'center'}}>
+                  <Avatar name={p.author} src={p.avatar} />
+                  <div>
+                    <div style={{fontWeight:700}}>{p.author}</div>
+                    <div className="muted" style={{fontSize:12}}>{new Date(Number(p.id)).toLocaleString()}</div>
+                  </div>
+                </div>
+                <div style={{marginTop:10}}>{p.text}</div>
+                {p.image && <img src={p.image} alt="post" className="post-image" />}
+
+                <div style={{marginTop:10}}>
+                  <Comments comments={p.comments||[]} onAdd={(c)=>addComment(p.id,c)} />
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      <aside className="right-column">
+        <div className="sidebar-card">
+          <h4 style={{marginTop:0}}>Contacts</h4>
+          <div className="socials">
+            <div className="social">Alex</div>
+            <div className="social">Mina</div>
+            <div className="social">Sara</div>
+          </div>
+        </div>
+      </aside>
+    </div>
   )
 }
 

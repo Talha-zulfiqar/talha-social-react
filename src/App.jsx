@@ -6,6 +6,7 @@ import NavBar from './NavBar'
 import Feed from './Feed'
 import Profile from './Profile'
 import Connections from './Connections'
+import Messages from './Messages'
 
 function RequireAuth({ children }){
   const user = sessionStorage.getItem('user')
@@ -26,6 +27,7 @@ export default function App(){
           <Route path="/feed" element={<RequireAuth><Feed/></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><Profile/></RequireAuth>} />
           <Route path="/connections" element={<RequireAuth><Connections/></RequireAuth>} />
+          <Route path="/messages" element={<RequireAuth><Messages/></RequireAuth>} />
           <Route path="*" element={<Navigate to={isLogged?'/feed':'/'} replace />} />
         </Routes>
       </div>

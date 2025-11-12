@@ -59,3 +59,61 @@ input:focus,textarea:focus{box-shadow:0 6px 18px rgba(30,144,255,0.08);border-co
 .muted{color:#666; font-size:14px}
 
 @media (max-width:520px){.card{padding:20px; margin:24px}}
+
+/* post image */
+.post-image{max-width:100%;border-radius:8px;margin-top:8px}
+
+/* messaging */
+.message-list .msg{margin-bottom:8px;padding:8px;border-radius:8px}
+.msg{margin-bottom:8px}
+.msg.me{background:#dff6ff;padding:8px;border-radius:8px;text-align:right}
+.msg.them{background:#fff;padding:8px;border-radius:8px;text-align:left}
+.msg-author{font-weight:700;font-size:13px;margin-bottom:4px}
+.msg-text{font-size:14px}
+
+/* --- Facebook-like layout and navbar enhancements --- */
+.navbar{display:flex;align-items:center;gap:12px;padding:10px 18px}
+.nav-left{display:flex;align-items:center;gap:12px}
+.nav-center{flex:1;display:flex;justify-content:center}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-shortcuts{display:flex;gap:6px;align-items:center}
+.nav-short{padding:8px 10px;border-radius:8px;color:#234;text-decoration:none}
+.search{width:100%;max-width:520px;padding:8px 12px;border-radius:20px;border:1px solid #e6f4ff;background:#f8fbff}
+.icon-btn{position:relative;padding:8px;border-radius:8px;cursor:pointer}
+.badge{position:absolute;top:0;right:0;background:#e0245e;color:#fff;font-size:11px;padding:2px 6px;border-radius:999px;transform:translate(40%,-40%);box-shadow:0 2px 6px rgba(0,0,0,0.12)}
+.nav-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover}
+.nav-avatar-fallback{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#dbeeff;color:var(--blue);text-decoration:none}
+.hamburger{display:none;border:none;background:transparent;font-size:20px;padding:6px;cursor:pointer}
+.mobile-menu{position:absolute;left:10px;top:58px;background:#fff;padding:10px;border-radius:8px;box-shadow:0 8px 30px rgba(2,10,25,0.12)}
+
+/* Three-column layout for feed */
+.wrap{max-width:1200px;padding:18px;margin:0 auto}
+.layout{display:grid;grid-template-columns:240px 1fr 320px;gap:18px;align-items:start}
+.left-column, .right-column{position:relative}
+.center-column{min-height:60vh}
+
+/* Card variants for sidebars */
+.sidebar-card{padding:12px;border-radius:12px;background:linear-gradient(180deg,#fff,#fbfdff);box-shadow:0 6px 20px rgba(2,10,25,0.04)}
+
+/* Animations */
+.post-card{transition:transform .18s cubic-bezier(.2,.9,.3,1), box-shadow .18s ease}
+.btn-logout, .primary{transition:transform .12s ease, box-shadow .12s ease}
+.btn-logout:hover, .primary:hover{transform:translateY(-2px)}
+@keyframes popIn{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.card{animation:popIn .16s ease both}
+
+/* responsive */
+@media (max-width:1000px){
+  .layout{grid-template-columns:200px 1fr}
+  .right-column{display:none}
+}
+@media (max-width:720px){
+  .hamburger{display:inline-flex}
+  .nav-shortcuts{display:none}
+  .search{max-width:300px}
+  .layout{grid-template-columns:1fr}
+  .left-column{display:none}
+}
+
+/* small utility */
+.muted{color:#6b7280}

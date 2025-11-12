@@ -11,6 +11,7 @@ export default function Profile(){
 
   function save(){
     localStorage.setItem('profile', JSON.stringify(profile))
+    try{ window.dispatchEvent(new Event('profileChanged')) }catch{}
     setEditing(false)
   }
 
@@ -19,7 +20,12 @@ export default function Profile(){
     if (!f) return
     const reader = new FileReader()
     reader.onload = () => {
-      setProfile(p => ({...p, avatar: reader.result}))
+      setProfile(p => {
+        const next = {...p, avatar: reader.result}
+        try{ localStorage.setItem('profile', JSON.stringify(next)) }catch{}
+        try{ window.dispatchEvent(new Event('profileChanged')) }catch{}
+        return next
+      })
     }
     reader.readAsDataURL(f)
   }
