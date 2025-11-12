@@ -32,6 +32,20 @@ h1{margin:0 0 6px 0; font-size:24px; color:#012A4A}
 .forgot{font-size:13px; color:var(--blue); text-decoration:none}
 .primary{width:100%; background:var(--blue); color:#fff; border:none; padding:12px 14px; border-radius:10px; font-size:16px; cursor:pointer}
 .primary:active{transform:translateY(1px)}
+.btn-logout{background:#fff;border:1px solid #e6f1ff;padding:8px 10px;border-radius:8px;cursor:pointer}
+.navbar{position:sticky;top:0;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:space-between;padding:10px 20px;box-shadow:0 1px 6px rgba(0,0,0,0.06);z-index:30}
+.nav-left{display:flex;align-items:center;gap:12px}
+.nav-right{display:flex;align-items:center;gap:10px}
+.brand{font-weight:700;color:var(--blue);text-decoration:none}
+.nav-link{color:#345;text-decoration:none}
+.avatar{display:inline-flex;align-items:center;justify-content:center;background:#dbeeff;color:var(--blue);border-radius:50%;}
+.avatar-large{width:84px;height:84px;border-radius:12px;background:#dbeeff;color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:28px}
+.post-card{padding:12px;border:1px solid #eef6ff;border-radius:8px;transition:box-shadow .18s ease,transform .12s ease}
+.post-card:hover{box-shadow:0 6px 18px rgba(19,40,57,0.08);transform:translateY(-3px)}
+
+/* simple transitions for inputs */
+input,textarea{transition:box-shadow .12s ease,border-color .12s ease}
+input:focus,textarea:focus{box-shadow:0 6px 18px rgba(30,144,255,0.08);border-color:var(--blue);outline:none}
 .separator{display:flex; align-items:center; gap:12px; margin:16px 0}
 .separator::before, .separator::after{content:''; height:1px; background:#e6f1ff; flex:1}
 .separator span{font-size:13px; color:#678}

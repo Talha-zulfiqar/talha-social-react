@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function Login(){
   const [user, setUser] = useState('')
   const [pass, setPass] = useState('')
   const [error, setError] = useState('')
   const [show, setShow] = useState(false)
+  const navigate = useNavigate()
 
   const VALID_USER = 'talha'
   const VALID_PASS = '123'
@@ -17,7 +19,7 @@ export default function Login(){
 
     if (user.toLowerCase() === VALID_USER && pass === VALID_PASS){
       sessionStorage.setItem('user', VALID_USER)
-      window.location.hash = '#/welcome'
+      navigate('/feed')
     } else {
       setError('Invalid username or password')
     }
