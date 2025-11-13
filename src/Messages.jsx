@@ -95,7 +95,16 @@ export default function Messages(){
           <ul style={{listStyle:'none',padding:0,margin:0}}>
             {CONTACTS.map(c=> (
               <li key={c} style={{marginBottom:8}}>
-                <button className={c===selected? 'primary' : 'btn-logout'} style={{width:'100%'}} onClick={()=>setSelected(c)}>{c}</button>
+                <button className={c===selected? 'primary' : 'btn-logout'} style={{width:'100%'}} onClick={()=>{
+                  setSelected(c)
+                  try{
+                    const rawU = localStorage.getItem('unreadByConv')||'{}'
+                    const unreadByConv = JSON.parse(rawU)
+                    unreadByConv[c] = 0
+                    localStorage.setItem('unreadByConv', JSON.stringify(unreadByConv))
+                    window.dispatchEvent(new Event('appDataChanged'))
+                  }catch{}
+                }}>{c}</button>
               </li>
             ))}
           </ul>

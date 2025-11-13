@@ -36,6 +36,7 @@ export default function NavBar(){
     window.addEventListener('storage', onChange)
     return ()=>{
       window.removeEventListener('profileChanged', onChange)
+      window.removeEventListener('appDataChanged', onChange)
       window.removeEventListener('storage', onChange)
     }
   },[])
@@ -53,7 +54,9 @@ export default function NavBar(){
   return (
     <nav className="navbar topbar">
       <div className="nav-left">
-        <button className="hamburger" onClick={()=>setMenuOpen(p=>!p)} aria-label="menu">☰</button>
+        <button className="hamburger" onClick={()=>setMenuOpen(p=>!p)} aria-label="menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M3 12h18M3 18h18" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </button>
         <Link to="/feed" className="brand">Talha Social</Link>
         <div className="nav-shortcuts">
           <Link to="/feed" className="nav-short">Home</Link>
