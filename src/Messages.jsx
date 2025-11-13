@@ -47,18 +47,6 @@ export default function Messages(){
     }
   },[])
 
-  useEffect(()=>{
-    function onProfileChange(){
-      try{ setProfile(JSON.parse(localStorage.getItem('profile')||'{}')) }catch{}
-    }
-    window.addEventListener('profileChanged', onProfileChange)
-    window.addEventListener('storage', onProfileChange)
-    return ()=>{
-      window.removeEventListener('profileChanged', onProfileChange)
-      window.removeEventListener('storage', onProfileChange)
-    }
-  },[])
-
   function save(next){
     localStorage.setItem('conversations', JSON.stringify(next))
     setConversations(next)
