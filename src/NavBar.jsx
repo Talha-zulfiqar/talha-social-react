@@ -1,6 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
+function Icon({name, size=18}){
+  const common = {width:size,height:size,display:'inline-block',verticalAlign:'middle'}
+  if(name==='bell') return (
+    <svg style={common} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  )
+  if(name==='message') return (
+    <svg style={common} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  )
+  if(name==='search') return (
+    <svg style={common} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-4.35-4.35" stroke="#6b7280" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><circle cx="11" cy="11" r="6" stroke="#6b7280" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  )
+  return null
+}
+
 export default function NavBar(){
   const user = sessionStorage.getItem('user') || 'User'
   const navigate = useNavigate()
@@ -34,7 +48,7 @@ export default function NavBar(){
   }
 
   return (
-    <nav className="navbar">
+    <nav className="navbar topbar">
       <div className="nav-left">
         <button className="hamburger" onClick={()=>setMenuOpen(p=>!p)} aria-label="menu">☰</button>
         <Link to="/feed" className="brand">Talha Social</Link>
@@ -47,15 +61,15 @@ export default function NavBar(){
       </div>
 
       <div className="nav-center">
-        <input className="search" placeholder="Search" />
+        <div className="search-wrap"><Icon name="search" /><input className="search" placeholder="Search Talha Social" /></div>
       </div>
 
       <div className="nav-right">
         <div className="icon-btn" title="Notifications" onClick={clearNotifications}>
-          🔔
+          <Icon name="bell" />
           {unread>0 && <span className="badge">{unread}</span>}
         </div>
-        <Link to="/messages" className="icon-btn" title="Messages">💬</Link>
+        <Link to="/messages" className="icon-btn" title="Messages"><Icon name="message" /></Link>
         {profile && profile.avatar ? (
           <Link to="/profile"><img src={profile.avatar} alt="avatar" className="nav-avatar" /></Link>
         ) : (
