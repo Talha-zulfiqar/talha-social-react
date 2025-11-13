@@ -29,8 +29,11 @@ function simulateIncomingMessage(){
     const msg = { id: Date.now(), author: who, text: 'Hey — nice update!', time: Date.now() }
     conv[who] = conv[who] ? [...conv[who], msg] : [msg]
     localStorage.setItem('conversations', JSON.stringify(conv))
-    const um = parseInt(localStorage.getItem('unreadMessages')||'0',10)
-    localStorage.setItem('unreadMessages', String(um+1))
+    // per-conversation unread counts
+    const rawU = localStorage.getItem('unreadByConv') || '{}'
+    const unreadByConv = JSON.parse(rawU)
+    unreadByConv[who] = (unreadByConv[who]||0) + 1
+    localStorage.setItem('unreadByConv', JSON.stringify(unreadByConv))
     window.dispatchEvent(new Event('appDataChanged'))
   }catch(e){}
 }

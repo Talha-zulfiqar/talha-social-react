@@ -23,13 +23,13 @@ export default function NavBar(){
   })
   const [menuOpen, setMenuOpen] = useState(false)
   const [unread, setUnread] = useState(()=>{ try{ const n = JSON.parse(localStorage.getItem('notifications')||'0'); return n||0 }catch{return 0} })
-  const [unreadMsgs, setUnreadMsgs] = useState(()=>{ try{ const n = JSON.parse(localStorage.getItem('unreadMessages')||'0'); return n||0 }catch{return 0} })
+  const [unreadMsgs, setUnreadMsgs] = useState(()=>{ try{ const u = JSON.parse(localStorage.getItem('unreadByConv')||'{}'); return Object.values(u).reduce((s,v)=>s+v,0)||0 }catch{return 0} })
 
   useEffect(()=>{
     function onChange(){
       try{ const raw = localStorage.getItem('profile'); setProfile(raw ? JSON.parse(raw) : { avatar: '' }) }catch{}
       try{ const n = JSON.parse(localStorage.getItem('notifications')||'0'); setUnread(n||0) }catch{}
-      try{ const m = JSON.parse(localStorage.getItem('unreadMessages')||'0'); setUnreadMsgs(m||0) }catch{}
+      try{ const u = JSON.parse(localStorage.getItem('unreadByConv')||'{}'); setUnreadMsgs(Object.values(u).reduce((s,v)=>s+v,0)||0) }catch{}
     }
     window.addEventListener('profileChanged', onChange)
     window.addEventListener('appDataChanged', onChange)

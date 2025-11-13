@@ -10,10 +10,18 @@ export default function Feed(){
   const [posts, setPosts] = useState([])
   const [text, setText] = useState('')
   const [image, setImage] = useState(null)
+  const [lightbox, setLightbox] = useState(null)
 
   useEffect(()=>{
     const raw = localStorage.getItem('posts')
-    setPosts(raw? JSON.parse(raw) : [{id:1, author:'Alex', text:'Excited to share my latest project — built with React!', comments:[]},{id:2,author:'Mina',text:'Great article on frontend performance.',comments:[]}])
+    const initial = raw? JSON.parse(raw) : [{id:1, author:'Alex', text:'Excited to share my latest project — built with React!', comments:[]},{id:2,author:'Mina',text:'Great article on frontend performance.',comments:[]}]
+    // ensure at least one image post exists so dashboard shows images for demo
+    const hasImage = initial.some(p => p.image)
+    if(!hasImage){
+      initial.unshift({ id: Date.now()-1000, author: 'Demo', text: 'Welcome — this is a demo image post.', image: '/assets/bg.svg', comments: [] })
+      localStorage.setItem('posts', JSON.stringify(initial))
+    }
+    setPosts(initial)
   },[])
 
   function save(items){
@@ -39,6 +47,7 @@ export default function Feed(){
   }
 
   return (
+    <>
     <div className="layout">
       <aside className="left-column">
         <div className="sidebar-card">
@@ -95,7 +104,7 @@ export default function Feed(){
                   </div>
                 </div>
                 <div style={{marginTop:10}}>{p.text}</div>
-                {p.image && <img src={p.image} alt="post" className="post-image" />}
+                {p.image && <img src={p.image} alt="post" className="post-image" onClick={()=>setLightbox(p.image)} style={{cursor:'zoom-in'}} />}
 
                 <div style={{marginTop:10}}>
                   <Comments comments={p.comments||[]} onAdd={(c)=>addComment(p.id,c)} />
@@ -117,6 +126,14 @@ export default function Feed(){
         </div>
       </aside>
     </div>
+    {lightbox && (
+      <div className="lightbox" onClick={()=>setLightbox(null)}>
+        <div className="lightbox-inner">
+          <img src={lightbox} alt="full" />
+        </div>
+      </div>
+    )}
+    </>
   )
 }
 

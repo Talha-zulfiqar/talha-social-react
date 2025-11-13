@@ -13,13 +13,19 @@ export default function Messages(){
   const [text, setText] = useState('')
   const listRef = useRef(null)
   const [profile, setProfile] = useState(()=>{ try{ return JSON.parse(localStorage.getItem('profile')||'{}') }catch{return {}} })
-  const [profile, setProfile] = useState(()=>{ try{ return JSON.parse(localStorage.getItem('profile')||'{}') }catch{return {}} })
 
   useEffect(()=>{
     const raw = localStorage.getItem('conversations')
     setConversations(raw? JSON.parse(raw) : {})
     // clear unread messages when opening Messages
-    try{ localStorage.setItem('unreadMessages','0'); window.dispatchEvent(new Event('appDataChanged')) }catch{}
+    try{ 
+      const rawU = localStorage.getItem('unreadByConv') || '{}'
+      const unreadByConv = JSON.parse(rawU)
+      // clear all on opening messages
+      Object.keys(unreadByConv).forEach(k=> unreadByConv[k]=0)
+      localStorage.setItem('unreadByConv', JSON.stringify(unreadByConv))
+      window.dispatchEvent(new Event('appDataChanged'))
+    }catch{}
   },[])
 
   useEffect(()=>{
@@ -66,7 +72,13 @@ export default function Messages(){
     const next = { ...conversations, [selected]: [...conv, msg] }
     save(next)
     setText('')
-    try{ localStorage.setItem('unreadMessages','0'); window.dispatchEvent(new Event('appDataChanged')) }catch{}
+    try{ 
+      const rawU = localStorage.getItem('unreadByConv') || '{}'
+      const unreadByConv = JSON.parse(rawU)
+      unreadByConv[selected] = 0
+      localStorage.setItem('unreadByConv', JSON.stringify(unreadByConv))
+      window.dispatchEvent(new Event('appDataChanged'))
+    }catch{}
   }
 
   function avatarFor(name){
