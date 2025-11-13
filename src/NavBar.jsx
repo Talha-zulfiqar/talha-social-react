@@ -23,13 +23,16 @@ export default function NavBar(){
   })
   const [menuOpen, setMenuOpen] = useState(false)
   const [unread, setUnread] = useState(()=>{ try{ const n = JSON.parse(localStorage.getItem('notifications')||'0'); return n||0 }catch{return 0} })
+  const [unreadMsgs, setUnreadMsgs] = useState(()=>{ try{ const n = JSON.parse(localStorage.getItem('unreadMessages')||'0'); return n||0 }catch{return 0} })
 
   useEffect(()=>{
     function onChange(){
       try{ const raw = localStorage.getItem('profile'); setProfile(raw ? JSON.parse(raw) : { avatar: '' }) }catch{}
       try{ const n = JSON.parse(localStorage.getItem('notifications')||'0'); setUnread(n||0) }catch{}
+      try{ const m = JSON.parse(localStorage.getItem('unreadMessages')||'0'); setUnreadMsgs(m||0) }catch{}
     }
     window.addEventListener('profileChanged', onChange)
+    window.addEventListener('appDataChanged', onChange)
     window.addEventListener('storage', onChange)
     return ()=>{
       window.removeEventListener('profileChanged', onChange)
@@ -69,7 +72,7 @@ export default function NavBar(){
           <Icon name="bell" />
           {unread>0 && <span className="badge">{unread}</span>}
         </div>
-        <Link to="/messages" className="icon-btn" title="Messages"><Icon name="message" /></Link>
+  <Link to="/messages" className="icon-btn" title="Messages"><Icon name="message" />{unreadMsgs>0 && <span className="badge">{unreadMsgs}</span>}</Link>
         {profile && profile.avatar ? (
           <Link to="/profile"><img src={profile.avatar} alt="avatar" className="nav-avatar" /></Link>
         ) : (

@@ -125,5 +125,17 @@ body{padding-top:72px}
   .left-column{display:none}
 }
 
+/* Login hero layout */
+.login-card{display:flex;gap:18px;align-items:stretch}
+.login-hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(180deg,var(--fb-blue),#0f66d0);border-radius:12px;color:#fff}
+.login-hero img{width:160px;opacity:0.92;margin-bottom:12px}
+.login-hero .hero-text{max-width:320px;text-align:center}
+.login-form{flex:1;display:flex;flex-direction:column;justify-content:center;padding:18px}
+
+@media (max-width:900px){
+  .login-card{flex-direction:column}
+  .login-hero{order:2}
+}
+
 /* small utility */
 .muted{color:#6b7280}

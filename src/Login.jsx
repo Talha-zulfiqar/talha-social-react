@@ -26,10 +26,18 @@ export default function Login(){
   }
 
   return (
-    <section className="card" role="region" aria-labelledby="login-heading">
-      <h1 id="login-heading">Welcome back</h1>
-      <p className="subtitle">Sign in to continue to SocialApp</p>
-      <form onSubmit={submit} id="loginForm" noValidate>
+    <section className="card login-card" role="region" aria-labelledby="login-heading">
+      <div className="login-hero" aria-hidden="true">
+        <img src="/assets/bg.svg" alt="decorative" />
+        <div className="hero-text">
+          <h2>Connect with people</h2>
+          <p>Share updates, follow friends and discover communities.</p>
+        </div>
+      </div>
+      <div className="login-form">
+        <h1 id="login-heading">Welcome back</h1>
+        <p className="subtitle">Sign in to continue to SocialApp</p>
+        <form onSubmit={submit} id="loginForm" noValidate>
         <label className="field">
           <span className="label">Email or username</span>
           <input value={user} onChange={e=>setUser(e.target.value)} name="user" type="text" autoComplete="username" required />
@@ -51,12 +59,13 @@ export default function Login(){
         {error && <div style={{color:'#b00020', marginBottom:10}}>{error}</div>}
 
         <button className="primary" id="loginBtn" type="submit">Log in</button>
-      </form>
+        </form>
 
-      <div className="separator"><span>or</span></div>
-      <div className="socials">
-        <button className="social fb">Continue with Facebook</button>
-        <button className="social google">Continue with Google</button>
+        <div className="separator"><span>or</span></div>
+        <div className="socials">
+          <button className="social fb">Continue with Facebook</button>
+          <button className="social google">Continue with Google</button>
+        </div>
       </div>
     </section>
   )

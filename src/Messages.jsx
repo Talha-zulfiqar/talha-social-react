@@ -13,16 +13,33 @@ export default function Messages(){
   const [text, setText] = useState('')
   const listRef = useRef(null)
   const [profile, setProfile] = useState(()=>{ try{ return JSON.parse(localStorage.getItem('profile')||'{}') }catch{return {}} })
+  const [profile, setProfile] = useState(()=>{ try{ return JSON.parse(localStorage.getItem('profile')||'{}') }catch{return {}} })
 
   useEffect(()=>{
     const raw = localStorage.getItem('conversations')
     setConversations(raw? JSON.parse(raw) : {})
+    // clear unread messages when opening Messages
+    try{ localStorage.setItem('unreadMessages','0'); window.dispatchEvent(new Event('appDataChanged')) }catch{}
   },[])
 
   useEffect(()=>{
     // scroll to bottom when selected changes
     if(listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight
   },[selected, conversations])
+
+  useEffect(()=>{
+    function onProfileChange(){
+      try{ setProfile(JSON.parse(localStorage.getItem('profile')||'{}')) }catch{}
+    }
+    window.addEventListener('profileChanged', onProfileChange)
+    window.addEventListener('appDataChanged', onProfileChange)
+    window.addEventListener('storage', onProfileChange)
+    return ()=>{
+      window.removeEventListener('profileChanged', onProfileChange)
+      window.removeEventListener('appDataChanged', onProfileChange)
+      window.removeEventListener('storage', onProfileChange)
+    }
+  },[])
 
   useEffect(()=>{
     function onProfileChange(){
@@ -49,6 +66,7 @@ export default function Messages(){
     const next = { ...conversations, [selected]: [...conv, msg] }
     save(next)
     setText('')
+    try{ localStorage.setItem('unreadMessages','0'); window.dispatchEvent(new Event('appDataChanged')) }catch{}
   }
 
   function avatarFor(name){
