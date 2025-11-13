@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { signInWithGooglePopup } from './firebase'
 
 export default function Login(){
   const [user, setUser] = useState('')
@@ -22,6 +23,22 @@ export default function Login(){
       navigate('/feed')
     } else {
       setError('Invalid username or password')
+    }
+  }
+
+  async function onGoogleSignIn(){
+    setError('')
+    try{
+      const userObj = await signInWithGooglePopup()
+      const name = userObj.displayName || userObj.email || 'User'
+      sessionStorage.setItem('user', name)
+      const profileObj = { avatar: userObj.photoURL || '', title:'', location:'', about:'' }
+      try{ localStorage.setItem('profile', JSON.stringify(profileObj)) }catch{}
+      try{ window.dispatchEvent(new Event('profileChanged')) }catch{}
+      navigate('/feed')
+    }catch(err){
+      console.error('Google sign-in failed', err)
+      setError('Google sign-in failed. See console for details.')
     }
   }
 
@@ -70,8 +87,8 @@ export default function Login(){
 
         <div className="separator"><span>or</span></div>
         <div className="socials">
-          <button className="social fb">Continue with Facebook</button>
-          <button className="social google">Continue with Google</button>
+          <button className="social fb" type="button">Continue with Facebook</button>
+          <button className="social google" type="button" onClick={onGoogleSignIn}>Continue with Google</button>
         </div>
       </div>
     </section>
