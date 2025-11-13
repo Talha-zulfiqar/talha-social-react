@@ -7,6 +7,12 @@ import Feed from './Feed'
 import Profile from './Profile'
 import Connections from './Connections'
 import Messages from './Messages'
+import Friends from './Friends'
+import Watch from './Watch'
+import Marketplace from './Marketplace'
+import Groups from './Groups'
+import Events from './Events'
+import Pages from './Pages'
 
 function RequireAuth({ children }){
   const user = sessionStorage.getItem('user')
@@ -27,6 +33,12 @@ export default function App(){
           <Route path="/feed" element={<RequireAuth><Feed/></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><Profile/></RequireAuth>} />
           <Route path="/connections" element={<RequireAuth><Connections/></RequireAuth>} />
+          <Route path="/friends" element={<RequireAuth><Friends/></RequireAuth>} />
+          <Route path="/watch" element={<RequireAuth><Watch/></RequireAuth>} />
+          <Route path="/marketplace" element={<RequireAuth><Marketplace/></RequireAuth>} />
+          <Route path="/groups" element={<RequireAuth><Groups/></RequireAuth>} />
+          <Route path="/events" element={<RequireAuth><Events/></RequireAuth>} />
+          <Route path="/pages" element={<RequireAuth><Pages/></RequireAuth>} />
           <Route path="/messages" element={<RequireAuth><Messages/></RequireAuth>} />
           <Route path="*" element={<Navigate to={isLogged?'/feed':'/'} replace />} />
         </Routes>
