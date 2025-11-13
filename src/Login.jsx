@@ -28,7 +28,14 @@ export default function Login(){
   return (
     <section className="card login-card" role="region" aria-labelledby="login-heading">
       <div className="login-hero" aria-hidden="true">
-        <img src="/assets/bg.svg" alt="decorative" />
+        <div style={{width:160, height:160, display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.06)',borderRadius:80,marginBottom:12}}>
+          {/* handshake SVG */}
+          <svg width="96" height="96" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M2 12l7-7 3 3 6-6 4 4-7 7" stroke="rgba(255,255,255,0.95)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M17 7l4 4" stroke="rgba(255,255,255,0.95)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M7 13l3 3" stroke="rgba(255,255,255,0.95)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
         <div className="hero-text">
           <h2>Connect with people</h2>
           <p>Share updates, follow friends and discover communities.</p>
