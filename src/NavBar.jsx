@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { signOut as firebaseSignOut } from './firebase'
 
 function Icon({name, size=18}){
   const common = {width:size,height:size,display:'inline-block',verticalAlign:'middle'}
@@ -42,6 +43,7 @@ export default function NavBar(){
   },[])
 
   function logout(){
+    try{ firebaseSignOut() }catch{}
     sessionStorage.removeItem('user')
     navigate('/')
   }

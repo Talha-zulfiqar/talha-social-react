@@ -1,28 +1,43 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { signInWithGooglePopup } from './firebase'
+import { signInWithGooglePopup, signInWithEmail, signUpWithEmail, sendPasswordReset } from './firebase'
 
 export default function Login(){
   const [user, setUser] = useState('')
   const [pass, setPass] = useState('')
+  const [mode, setMode] = useState('login') // login | signup | reset
   const [error, setError] = useState('')
   const [show, setShow] = useState(false)
   const navigate = useNavigate()
 
-  const VALID_USER = 'talha'
-  const VALID_PASS = '123'
-
-  function submit(e){
+  async function submit(e){
     e.preventDefault();
     setError('')
-    if (!user) return setError('Please enter username')
-    if (!pass) return setError('Please enter password')
+    if (!user) return setError('Please enter email')
+    if (mode !== 'reset' && !pass) return setError('Please enter password')
 
-    if (user.toLowerCase() === VALID_USER && pass === VALID_PASS){
-      sessionStorage.setItem('user', VALID_USER)
-      navigate('/feed')
-    } else {
-      setError('Invalid username or password')
+    try{
+      if(mode === 'login'){
+        const userObj = await signInWithEmail(user, pass)
+        const name = userObj.displayName || userObj.email || userObj.uid
+        sessionStorage.setItem('user', name)
+        try{ window.dispatchEvent(new Event('profileChanged')) }catch{}
+        navigate('/feed')
+      }else if(mode === 'signup'){
+        const userObj = await signUpWithEmail(user, pass)
+        const name = userObj.displayName || userObj.email || userObj.uid
+        sessionStorage.setItem('user', name)
+        try{ window.dispatchEvent(new Event('profileChanged')) }catch{}
+        navigate('/feed')
+      }else if(mode === 'reset'){
+        await sendPasswordReset(user)
+        setError('Password reset email sent. Check your inbox.')
+      }
+    }catch(err){
+      console.error('Auth error', err)
+      const code = err && err.code ? err.code : ''
+      const msg = err && err.message ? err.message : ''
+      setError(`${code} ${msg}`.trim() || 'Authentication error')
     }
   }
 
@@ -38,7 +53,10 @@ export default function Login(){
       navigate('/feed')
     }catch(err){
       console.error('Google sign-in failed', err)
-      setError('Google sign-in failed. See console for details.')
+      // show a more helpful error to the user (error.code and message if available)
+      const code = err && err.code ? err.code : ''
+      const msg = err && err.message ? err.message : ''
+      setError(`${code} ${msg}`.trim() || 'Google sign-in failed. See console for details.')
     }
   }
 
@@ -62,28 +80,37 @@ export default function Login(){
         <h1 id="login-heading">Welcome back</h1>
         <p className="subtitle">Sign in to continue to SocialApp</p>
         <form onSubmit={submit} id="loginForm" noValidate>
-        <label className="field">
-          <span className="label">Email or username</span>
-          <input value={user} onChange={e=>setUser(e.target.value)} name="user" type="text" autoComplete="username" required />
-        </label>
+          <label className="field">
+            <span className="label">Email</span>
+            <input value={user} onChange={e=>setUser(e.target.value)} name="user" type="email" autoComplete="email" required />
+          </label>
 
-        <label className="field">
-          <span className="label">Password</span>
-          <div className="pw-row">
-            <input value={pass} onChange={e=>setPass(e.target.value)} name="password" type={show? 'text':'password'} autoComplete="current-password" required />
-            <button type="button" className="pw-toggle" onClick={()=>setShow(s=>!s)}>{show? 'Hide':'Show'}</button>
+          {mode !== 'reset' && (
+            <label className="field">
+              <span className="label">Password</span>
+              <div className="pw-row">
+                <input value={pass} onChange={e=>setPass(e.target.value)} name="password" type={show? 'text':'password'} autoComplete={mode==='signup'? 'new-password':'current-password'} required />
+                <button type="button" className="pw-toggle" onClick={()=>setShow(s=>!s)}>{show? 'Hide':'Show'}</button>
+              </div>
+            </label>
+          )}
+
+          <div className="controls-row">
+            {mode !== 'reset' && <label className="remember"><input type="checkbox" /> Remember me</label>}
+            <button type="button" className="forgot" onClick={()=>setMode(mode==='reset'?'login':'reset')}>{mode==='reset' ? 'Back to login' : 'Forgot password?'}</button>
           </div>
-        </label>
 
-        <div className="controls-row">
-          <label className="remember"><input type="checkbox" /> Remember me</label>
-          <a className="forgot" href="#">Forgot password?</a>
-        </div>
+          {error && <div style={{color:'#b00020', marginBottom:10}}>{error}</div>}
 
-        {error && <div style={{color:'#b00020', marginBottom:10}}>{error}</div>}
-
-        <button className="primary" id="loginBtn" type="submit">Log in</button>
+          <button className="primary" id="loginBtn" type="submit">{mode==='signup' ? 'Create account' : mode==='reset' ? 'Send reset email' : 'Log in'}</button>
         </form>
+        <div style={{marginTop:8}}>
+          {mode === 'login' ? (
+            <div>Don't have an account? <button className="btn-link" onClick={()=>setMode('signup')}>Create one</button></div>
+          ) : mode === 'signup' ? (
+            <div>Already have an account? <button className="btn-link" onClick={()=>setMode('login')}>Sign in</button></div>
+          ) : null}
+        </div>
 
         <div className="separator"><span>or</span></div>
         <div className="socials">

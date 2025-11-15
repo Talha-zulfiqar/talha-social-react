@@ -2,7 +2,7 @@
 // This file exports helpers for Auth (Google), Firestore (posts, profiles, messages) and Storage (images)
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js'
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js'
+import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut as fbSignOut } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js'
 import { getFirestore, collection, getDocs, onSnapshot, addDoc, doc, setDoc, serverTimestamp, query, orderBy, where } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js'
 import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js'
 
@@ -13,12 +13,24 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 }
 
+// Basic config validation to surface helpful errors early
+function checkConfig(){
+  const missing = []
+  if(!firebaseConfig.apiKey) missing.push('VITE_FIREBASE_API_KEY')
+  if(!firebaseConfig.authDomain) missing.push('VITE_FIREBASE_AUTH_DOMAIN')
+  if(!firebaseConfig.projectId) missing.push('VITE_FIREBASE_PROJECT_ID')
+  if(!firebaseConfig.appId) missing.push('VITE_FIREBASE_APP_ID')
+  return missing
+}
+
 let app = null
 let auth = null
 let db = null
 let storage = null
 
 try{
+  const missing = checkConfig()
+  if(missing.length) throw new Error('Missing Firebase env vars: ' + missing.join(', '))
   app = initializeApp(firebaseConfig)
   auth = getAuth(app)
   db = getFirestore(app)
@@ -33,8 +45,39 @@ const googleProvider = () => new GoogleAuthProvider()
 export async function signInWithGooglePopup(){
   if(!auth) throw new Error('Firebase auth not initialized')
   const provider = googleProvider()
-  const result = await signInWithPopup(auth, provider)
-  return result.user
+  try{
+    const result = await signInWithPopup(auth, provider)
+    return result.user
+  }catch(err){
+    // Provide a clearer message for common misconfigurations
+    if(err && err.code === 'auth/configuration-not-found'){
+      throw new Error('Firebase Auth configuration not found. Ensure Google provider is enabled in Firebase Console (Authentication → Sign-in method) and that your firebaseConfig values are correct.')
+    }
+    throw err
+  }
+}
+
+// Email/password auth helpers
+export async function signUpWithEmail(email, password){
+  if(!auth) throw new Error('Firebase auth not initialized')
+  const userCred = await createUserWithEmailAndPassword(auth, email, password)
+  return userCred.user
+}
+
+export async function signInWithEmail(email, password){
+  if(!auth) throw new Error('Firebase auth not initialized')
+  const userCred = await signInWithEmailAndPassword(auth, email, password)
+  return userCred.user
+}
+
+export async function sendPasswordReset(email){
+  if(!auth) throw new Error('Firebase auth not initialized')
+  return sendPasswordResetEmail(auth, email)
+}
+
+export async function signOut(){
+  if(!auth) return
+  return fbSignOut(auth)
 }
 
 // Posts
