@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { fetchPostsOnce, createPost, uploadDataUrl, subscribePosts } from './firebase'
 
 function Avatar({name, src, size=40}){
   if (src) return <img src={src} alt={name} style={{width:size,height:size,borderRadius:'50%'}} />
@@ -13,15 +14,35 @@ export default function Feed(){
   const [lightbox, setLightbox] = useState(null)
 
   useEffect(()=>{
-    const raw = localStorage.getItem('posts')
-    const initial = raw? JSON.parse(raw) : [{id:1, author:'Alex', text:'Excited to share my latest project — built with React!', comments:[]},{id:2,author:'Mina',text:'Great article on frontend performance.',comments:[]}]
-    // ensure at least one image post exists so dashboard shows images for demo
-    const hasImage = initial.some(p => p.image)
-    if(!hasImage){
-      initial.unshift({ id: Date.now()-1000, author: 'Demo', text: 'Welcome — this is a demo image post.', image: '/assets/bg.svg', comments: [] })
-      localStorage.setItem('posts', JSON.stringify(initial))
+    let mounted = true
+    async function load(){
+      try{
+        const remote = await fetchPostsOnce()
+        if(mounted && remote && remote.length){
+          setPosts(remote)
+          return
+        }
+      }catch(e){
+        // no firestore available or error
+      }
+
+      const raw = localStorage.getItem('posts')
+      const initial = raw? JSON.parse(raw) : [{id:1, author:'Alex', text:'Excited to share my latest project — built with React!', comments:[]},{id:2,author:'Mina',text:'Great article on frontend performance.',comments:[]}]
+      // ensure at least one image post exists so dashboard shows images for demo
+      const hasImage = initial.some(p => p.image)
+      if(!hasImage){
+        initial.unshift({ id: Date.now()-1000, author: 'Demo', text: 'Welcome — this is a demo image post.', image: '/assets/bg.svg', comments: [] })
+        localStorage.setItem('posts', JSON.stringify(initial))
+      }
+      if(mounted) setPosts(initial)
+      // try subscribing to remote posts if available
+      try{
+        const unsub = subscribePosts(p => { setPosts(p) })
+        return ()=>{ mounted=false; unsub && unsub() }
+      }catch(e){ mounted=false }
     }
-    setPosts(initial)
+    const maybe = load()
+    return ()=>{ mounted=false }
   },[])
 
   function save(items){
@@ -35,10 +56,28 @@ export default function Feed(){
     const user = sessionStorage.getItem('user') || 'You'
     let authorAvatar = null
     try{ const pr = JSON.parse(localStorage.getItem('profile')||'{}'); authorAvatar = pr && pr.avatar ? pr.avatar : null }catch{}
-    const next = [{id:Date.now(), author:user, avatar: authorAvatar, text:text.trim(), image: image || null, comments:[]}, ...posts]
-    save(next)
-    setText('')
-    setImage(null)
+
+    ;(async ()=>{
+      try{
+        let imageUrl = null
+        if(image){
+          if(image.startsWith('data:')){
+            imageUrl = await uploadDataUrl(image, 'posts')
+          }else{
+            imageUrl = image
+          }
+        }
+        await createPost({ author: user, text: text.trim(), image: imageUrl, avatar: authorAvatar })
+        // refresh remote posts
+        try{ const remote = await fetchPostsOnce(); setPosts(remote) }catch{}
+      }catch(err){
+        // fallback to localStorage
+        const next = [{id:Date.now(), author:user, avatar: authorAvatar, text:text.trim(), image: image || null, comments:[]}, ...posts]
+        save(next)
+      }
+      setText('')
+      setImage(null)
+    })()
   }
 
   function addComment(postId, comment){

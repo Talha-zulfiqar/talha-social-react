@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { uploadDataUrl, setProfile as setProfileRemote, getProfile as getProfileRemote } from './firebase'
 
 export default function Profile(){
   const user = sessionStorage.getItem('user') || 'Talha'
@@ -7,6 +8,13 @@ export default function Profile(){
 
   useEffect(()=>{
     try{ const raw = localStorage.getItem('profile'); if(raw) setProfile(JSON.parse(raw)) }catch{}
+    // try loading remote profile if available
+    ;(async ()=>{
+      try{
+        const remote = await getProfileRemote(user)
+        if(remote) setProfile(remote)
+      }catch{}
+    })()
   },[])
 
   function save(){
@@ -19,13 +27,25 @@ export default function Profile(){
     const f = e.target.files && e.target.files[0]
     if (!f) return
     const reader = new FileReader()
-    reader.onload = () => {
-      setProfile(p => {
-        const next = {...p, avatar: reader.result}
+    reader.onload = async () => {
+      const dataUrl = reader.result
+      // try uploading to Firebase Storage, fallback to local data URL
+      try{
+        const url = await uploadDataUrl(dataUrl, 'avatars')
+        const next = {...profile, avatar: url}
         try{ localStorage.setItem('profile', JSON.stringify(next)) }catch{}
         try{ window.dispatchEvent(new Event('profileChanged')) }catch{}
-        return next
-      })
+        setProfile(next)
+        try{ await setProfileRemote({ name: user, ...next }) }catch{}
+      }catch(err){
+        // fallback
+        setProfile(p => {
+          const next = {...p, avatar: dataUrl}
+          try{ localStorage.setItem('profile', JSON.stringify(next)) }catch{}
+          try{ window.dispatchEvent(new Event('profileChanged')) }catch{}
+          return next
+        })
+      }
     }
     reader.readAsDataURL(f)
   }
