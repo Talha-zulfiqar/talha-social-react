@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import useTheme from './hooks/useTheme'
 import { Link, useNavigate } from 'react-router-dom'
 import { signOut as firebaseSignOut } from './firebase'
 
@@ -50,6 +51,8 @@ export default function NavBar(){
     navigate('/')
   }
 
+  const [theme, setTheme] = useTheme()
+
   function clearNotifications(){
     localStorage.setItem('notifications','0')
     setUnread(0)
@@ -75,6 +78,9 @@ export default function NavBar(){
       </div>
 
       <div className="nav-right">
+        <button title="Toggle theme" onClick={()=>setTheme(theme==='dark'?'light':'dark')} style={{marginRight:10,background:'transparent',border:'none',color:'var(--text)',cursor:'pointer'}}>
+          {theme==='dark' ? '☀️' : '🌙'}
+        </button>
         <div className="icon-btn" title="Notifications" onClick={clearNotifications}>
           <Icon name="bell" />
           {unread>0 && <span className="badge">{unread}</span>}

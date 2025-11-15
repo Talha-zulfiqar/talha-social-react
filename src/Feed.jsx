@@ -9,6 +9,7 @@ function Avatar({name, src, size=40}){
 
 export default function Feed(){
   const [posts, setPosts] = useState([])
+  const [loading, setLoading] = useState(true)
   const [text, setText] = useState('')
   const [image, setImage] = useState(null)
   const [lightbox, setLightbox] = useState(null)
@@ -42,6 +43,7 @@ export default function Feed(){
       }catch(e){ mounted=false }
     }
     const maybe = load()
+    (async ()=>{ try{ await maybe }catch{} finally{ if(mounted) setLoading(false) } })()
     return ()=>{ mounted=false }
   },[])
 
@@ -133,7 +135,27 @@ export default function Feed(){
           </form>
 
           <div style={{display:'grid',gap:12,marginTop:18}}>
-            {posts.map(p => (
+            {loading ? (
+              <>
+              {/* show 3 skeleton items while loading */}
+              {[1,2,3].map(i=> (
+                <article key={'sk'+i} className="post-card">
+                  <div style={{display:'flex',gap:12,alignItems:'center'}}>
+                    <div className="skeleton skeleton-avatar" />
+                    <div style={{flex:1}}>
+                      <div className="skeleton skeleton-line" style={{width:'40%'}} />
+                      <div className="skeleton skeleton-line" style={{width:'30%',height:12}} />
+                    </div>
+                  </div>
+                  <div style={{marginTop:10}}>
+                    <div className="skeleton skeleton-line" style={{width:'100%',height:16}} />
+                    <div className="skeleton skeleton-line" style={{width:'90%',height:16}} />
+                  </div>
+                </article>
+              ))}
+              </>
+            ) : (
+            posts.map(p => (
               <article key={p.id} className="post-card">
                 <div style={{display:'flex',gap:12,alignItems:'center'}}>
                   <Avatar name={p.author} src={p.avatar} />
