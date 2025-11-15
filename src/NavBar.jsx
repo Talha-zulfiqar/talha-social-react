@@ -17,7 +17,7 @@ function Icon({name, size=18}){
 }
 
 export default function NavBar(){
-  const user = sessionStorage.getItem('user') || 'User'
+  const [user, setUser] = useState(() => sessionStorage.getItem('user') || 'User')
   const navigate = useNavigate()
   const [profile, setProfile] = useState(()=>{
     try{ const raw = localStorage.getItem('profile'); return raw ? JSON.parse(raw) : { avatar: '' } }catch{ return { avatar: '' } }
@@ -28,6 +28,7 @@ export default function NavBar(){
 
   useEffect(()=>{
     function onChange(){
+      try{ setUser(sessionStorage.getItem('user') || 'User') }catch{}
       try{ const raw = localStorage.getItem('profile'); setProfile(raw ? JSON.parse(raw) : { avatar: '' }) }catch{}
       try{ const n = JSON.parse(localStorage.getItem('notifications')||'0'); setUnread(n||0) }catch{}
       try{ const u = JSON.parse(localStorage.getItem('unreadByConv')||'{}'); setUnreadMsgs(Object.values(u).reduce((s,v)=>s+v,0)||0) }catch{}
@@ -45,6 +46,7 @@ export default function NavBar(){
   function logout(){
     try{ firebaseSignOut() }catch{}
     sessionStorage.removeItem('user')
+    try{ window.dispatchEvent(new Event('profileChanged')) }catch{}
     navigate('/')
   }
 
