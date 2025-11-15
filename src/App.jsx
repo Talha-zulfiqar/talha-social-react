@@ -7,6 +7,7 @@ import Feed from './Feed'
 import Profile from './Profile'
 import Connections from './Connections'
 import Messages from './Messages'
+import Debug from './Debug'
 import Friends from './Friends'
 import Watch from './Watch'
 import Marketplace from './Marketplace'
@@ -40,6 +41,7 @@ export default function App(){
           <Route path="/events" element={<RequireAuth><Events/></RequireAuth>} />
           <Route path="/pages" element={<RequireAuth><Pages/></RequireAuth>} />
           <Route path="/messages" element={<RequireAuth><Messages/></RequireAuth>} />
+          <Route path="/debug" element={<Debug/>} />
           <Route path="*" element={<Navigate to={isLogged?'/feed':'/'} replace />} />
         </Routes>
       </div>
