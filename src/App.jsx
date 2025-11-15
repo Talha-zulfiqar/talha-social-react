@@ -16,8 +16,15 @@ import Events from './Events'
 import Pages from './Pages'
 
 function RequireAuth({ children }){
-  const user = sessionStorage.getItem('user')
-  if (!user) return <Navigate to="/" replace />
+  const [authed, setAuthed] = useState(!!sessionStorage.getItem('user'))
+  useEffect(()=>{
+    function onChange(){ setAuthed(!!sessionStorage.getItem('user')) }
+    window.addEventListener('profileChanged', onChange)
+    window.addEventListener('storage', onChange)
+    return ()=>{ window.removeEventListener('profileChanged', onChange); window.removeEventListener('storage', onChange) }
+  },[])
+
+  if (!authed) return <Navigate to="/" replace />
   return children
 }
 
