@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './Login'
 import Welcome from './Welcome'
@@ -22,7 +22,19 @@ function RequireAuth({ children }){
 }
 
 export default function App(){
-  const isLogged = !!sessionStorage.getItem('user')
+  const [isLogged, setIsLogged] = useState(() => !!sessionStorage.getItem('user'))
+
+  useEffect(() => {
+    function onAuthChange(){
+      setIsLogged(!!sessionStorage.getItem('user'))
+    }
+    window.addEventListener('profileChanged', onAuthChange)
+    window.addEventListener('storage', onAuthChange)
+    return () => {
+      window.removeEventListener('profileChanged', onAuthChange)
+      window.removeEventListener('storage', onAuthChange)
+    }
+  }, [])
 
   return (
     <>
