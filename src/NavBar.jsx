@@ -65,9 +65,11 @@ export default function NavBar(){
         <button className="hamburger" onClick={()=>setMenuOpen(p=>!p)} aria-label="menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
         </button>
-        <Link to="/feed" className="brand font-bold flex items-center gap-1">
-          <img src={logo} alt="Talha Social" className="h-6 w-auto inline-block align-middle" />
-          <span className="hidden md:inline">Talha Social</span>
+        <Link to="/feed" className="brand font-bold flex items-center gap-2 h-full">
+          <div className="flex items-center h-full">
+            <img src={logo} alt="Talha Social" className="h-6 w-6 object-contain block" />
+          </div>
+          <span className="ml-2 text-base leading-none hidden md:inline-block">Talha Social</span>
         </Link>
         <div className="nav-shortcuts hidden md:flex items-center gap-2">
           <Link to="/feed" className="nav-short">Home</Link>
