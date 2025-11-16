@@ -2,7 +2,7 @@
 // This file exports helpers for Auth (Google), Firestore (posts, profiles, messages) and Storage (images)
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js'
-import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut as fbSignOut } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js'
+import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut as fbSignOut, onAuthStateChanged as fbOnAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js'
 import { getFirestore, collection, getDocs, onSnapshot, addDoc, doc, setDoc, serverTimestamp, query, orderBy, where } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js'
 import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js'
 
@@ -45,6 +45,13 @@ const googleProvider = () => new GoogleAuthProvider()
 export async function signInWithGooglePopup(){
   if(!auth) throw new Error('Firebase auth not initialized')
   const provider = googleProvider()
+  // Force account chooser so users can pick which Google account to use
+  // even if they are already signed-in with one in the browser.
+  try{
+    provider.setCustomParameters({ prompt: 'select_account' })
+  }catch(e){
+    // Older SDKs or edge cases may not support this; ignore safely.
+  }
   try{
     const result = await signInWithPopup(auth, provider)
     return result.user
@@ -72,7 +79,24 @@ export async function signInWithEmail(email, password){
 
 export async function sendPasswordReset(email){
   if(!auth) throw new Error('Firebase auth not initialized')
-  return sendPasswordResetEmail(auth, email)
+  // Provide a sensible default continue URL so the action link redirects
+  // back to the local app during development. Hosts must be added to
+  // Firebase Authorized domains for the deep link to work correctly.
+  const actionCodeSettings = {
+    // Redirect back to the app's login page after password reset
+    // our login route is '/', so use that to avoid 404 redirects
+    url: (typeof window !== 'undefined' && window.location ? window.location.origin + '/' : undefined),
+    handleCodeInApp: false
+  }
+  // Call Firebase SDK to send the reset email. actionCodeSettings above
+  // ensures the link redirects back to the login page during development.
+  try{
+  const res = await sendPasswordResetEmail(auth, email, actionCodeSettings)
+  return res
+  }catch(err){
+    console.error('Firebase: sendPasswordReset failed', err)
+    throw err
+  }
 }
 
 export async function signOut(){
@@ -148,5 +172,11 @@ export async function fetchConversationMessages(convId){
 }
 
 export { auth, db, storage }
+
+// expose a helper to let the app listen to Firebase auth state changes
+export function onAuthStateChanged(callback){
+  if(!auth) return () => {}
+  return fbOnAuthStateChanged(auth, user => callback(user))
+}
 
 export default { signInWithGooglePopup, fetchPostsOnce, subscribePosts, createPost, uploadDataUrl, setProfile, getProfile, sendMessage, fetchConversationMessages }

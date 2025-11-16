@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './Login'
 import Welcome from './Welcome'
@@ -14,34 +14,62 @@ import Marketplace from './Marketplace'
 import Groups from './Groups'
 import Events from './Events'
 import Pages from './Pages'
-
-function RequireAuth({ children }){
-  const [authed, setAuthed] = useState(!!sessionStorage.getItem('user'))
-  useEffect(()=>{
-    function onChange(){ setAuthed(!!sessionStorage.getItem('user')) }
-    window.addEventListener('profileChanged', onChange)
-    window.addEventListener('storage', onChange)
-    return ()=>{ window.removeEventListener('profileChanged', onChange); window.removeEventListener('storage', onChange) }
-  },[])
-
-  if (!authed) return <Navigate to="/" replace />
-  return children
-}
+import { onAuthStateChanged } from './firebase'
 
 export default function App(){
+  // centralize auth state so RequireAuth uses the same source of truth
   const [isLogged, setIsLogged] = useState(() => !!sessionStorage.getItem('user'))
 
-  useEffect(() => {
-    function onAuthChange(){
-      setIsLogged(!!sessionStorage.getItem('user'))
-    }
-    window.addEventListener('profileChanged', onAuthChange)
-    window.addEventListener('storage', onAuthChange)
-    return () => {
-      window.removeEventListener('profileChanged', onAuthChange)
-      window.removeEventListener('storage', onAuthChange)
+  const checkAuth = useCallback(() => {
+    // defensive: sessionStorage may be cleared in other tabs
+    try{
+      return !!sessionStorage.getItem('user')
+    }catch{
+      return false
     }
   }, [])
+
+  useEffect(() => {
+    // subscribe to Firebase auth changes when available to keep UI in sync
+    let unsubAuth = null
+    try{
+      unsubAuth = onAuthStateChanged(user => {
+        // if Firebase reports a user, ensure sessionStorage reflects it
+        if(user){
+          try{ const name = user.displayName || user.email || user.uid; sessionStorage.setItem('user', name) }catch{}
+        }else{
+          try{ sessionStorage.removeItem('user') }catch{}
+        }
+        setIsLogged(checkAuth())
+      })
+    }catch(e){ /* ignore if firebase not initialized */ }
+
+    function onAuthChange(){ setIsLogged(checkAuth()) }
+    // listen for custom events and storage so changes propagate across tabs
+    window.addEventListener('profileChanged', onAuthChange)
+    window.addEventListener('appDataChanged', onAuthChange)
+    window.addEventListener('storage', onAuthChange)
+
+    // also re-check when the window gains focus (helps when user completes login in another tab)
+    window.addEventListener('focus', onAuthChange)
+
+    // initial reconciliation in case a login happened before React mounted
+    setIsLogged(checkAuth())
+
+    return () => {
+      window.removeEventListener('profileChanged', onAuthChange)
+      window.removeEventListener('appDataChanged', onAuthChange)
+      window.removeEventListener('storage', onAuthChange)
+      window.removeEventListener('focus', onAuthChange)
+      if(typeof unsubAuth === 'function') unsubAuth()
+    }
+  }, [checkAuth])
+
+  // RequireAuth now reads from the centralized isLogged state to avoid races
+  function RequireAuth({ children }){
+    if (!isLogged) return <Navigate to="/" replace />
+    return children
+  }
 
   return (
     <>

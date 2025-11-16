@@ -7,6 +7,7 @@ export default function Login(){
   const [pass, setPass] = useState('')
   const [mode, setMode] = useState('login') // login | signup | reset
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
   const [show, setShow] = useState(false)
   const navigate = useNavigate()
 
@@ -19,25 +20,36 @@ export default function Login(){
     try{
       if(mode === 'login'){
         const userObj = await signInWithEmail(user, pass)
+        if(!userObj) throw new Error('Authentication failed: no user returned')
         const name = userObj.displayName || userObj.email || userObj.uid
         sessionStorage.setItem('user', name)
         try{ window.dispatchEvent(new Event('profileChanged')) }catch{}
         navigate('/feed')
       }else if(mode === 'signup'){
         const userObj = await signUpWithEmail(user, pass)
+        if(!userObj) throw new Error('Signup failed: no user returned')
         const name = userObj.displayName || userObj.email || userObj.uid
         sessionStorage.setItem('user', name)
         try{ window.dispatchEvent(new Event('profileChanged')) }catch{}
         navigate('/feed')
       }else if(mode === 'reset'){
+        // clear any previous messages
+        setError('')
+        setInfo('')
         await sendPasswordReset(user)
-        setError('Password reset email sent. Check your inbox.')
+        // show an informative message and next steps
+        setInfo('Password reset email sent. Check your inbox (and spam). If you do not receive it, verify the email exists in Firebase Console → Authentication → Users and that localhost is an authorized domain.')
       }
     }catch(err){
       console.error('Auth error', err)
       const code = err && err.code ? err.code : ''
       const msg = err && err.message ? err.message : ''
-      setError(`${code} ${msg}`.trim() || 'Authentication error')
+      // Surface a clear message for common cases (user not found, invalid email)
+      if(code === 'auth/user-not-found'){
+        setError('No account found for that email. Create an account first or check for typos.')
+      }else{
+        setError(`${code} ${msg}`.trim() || 'Authentication error')
+      }
     }
   }
 
@@ -45,6 +57,7 @@ export default function Login(){
     setError('')
     try{
       const userObj = await signInWithGooglePopup()
+      if(!userObj) throw new Error('Google sign-in failed: no user returned')
       const name = userObj.displayName || userObj.email || 'User'
       sessionStorage.setItem('user', name)
       const profileObj = { avatar: userObj.photoURL || '', title:'', location:'', about:'' }
@@ -56,7 +69,13 @@ export default function Login(){
       // show a more helpful error to the user (error.code and message if available)
       const code = err && err.code ? err.code : ''
       const msg = err && err.message ? err.message : ''
-      setError(`${code} ${msg}`.trim() || 'Google sign-in failed. See console for details.')
+      // If this is an unauthorized-domain error, show actionable steps
+      if(code === 'auth/unauthorized-domain'){
+        const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : '<your app origin>'
+        setError(`auth/unauthorized-domain — Your app origin (${origin}) is not authorized in Firebase Authentication. Add it under Firebase Console → Authentication → Authorized domains (add 'localhost' or '127.0.0.1' for local dev).`) 
+      }else{
+        setError(`${code} ${msg}`.trim() || 'Google sign-in failed. See console for details.')
+      }
     }
   }
 
@@ -101,6 +120,7 @@ export default function Login(){
           </div>
 
           {error && <div style={{color:'#b00020', marginBottom:10}}>{error}</div>}
+          {info && <div style={{color:'#0b6f2e', marginBottom:10}}>{info}</div>}
 
           <button className="primary" id="loginBtn" type="submit">{mode==='signup' ? 'Create account' : mode==='reset' ? 'Send reset email' : 'Log in'}</button>
         </form>

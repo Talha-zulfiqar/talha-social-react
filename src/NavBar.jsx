@@ -3,16 +3,16 @@ import useTheme from './hooks/useTheme'
 import { Link, useNavigate } from 'react-router-dom'
 import { signOut as firebaseSignOut } from './firebase'
 
-function Icon({name, size=18}){
-  const common = {width:size,height:size,display:'inline-block',verticalAlign:'middle'}
+function Icon({name, size=18, className=''}){
+  // Use width/height attributes and currentColor so icons inherit text color
   if(name==='bell') return (
-    <svg style={common} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
   )
   if(name==='message') return (
-    <svg style={common} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
   )
   if(name==='search') return (
-    <svg style={common} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-4.35-4.35" stroke="#6b7280" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><circle cx="11" cy="11" r="6" stroke="#6b7280" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
   )
   return null
 }
@@ -59,13 +59,13 @@ export default function NavBar(){
   }
 
   return (
-    <nav className="navbar topbar">
-      <div className="nav-left">
+    <nav className="navbar topbar flex items-center justify-between px-4">
+      <div className="nav-left flex items-center gap-3">
         <button className="hamburger" onClick={()=>setMenuOpen(p=>!p)} aria-label="menu">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M3 12h18M3 18h18" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
         </button>
-        <Link to="/feed" className="brand">Talha Social</Link>
-        <div className="nav-shortcuts">
+        <Link to="/feed" className="brand font-bold">Talha Social</Link>
+        <div className="nav-shortcuts hidden md:flex items-center gap-2">
           <Link to="/feed" className="nav-short">Home</Link>
           <Link to="/watch" className="nav-short">Watch</Link>
           <Link to="/marketplace" className="nav-short">Marketplace</Link>
@@ -73,19 +73,19 @@ export default function NavBar(){
         </div>
       </div>
 
-      <div className="nav-center">
-        <div className="search-wrap"><Icon name="search" /><input className="search" placeholder="Search Talha Social" /></div>
+      <div className="nav-center flex-1 flex justify-center">
+        <div className="search-wrap w-full max-w-xl flex items-center gap-2"><Icon name="search" className="text-current" /><input className="search" placeholder="Search Talha Social" /></div>
       </div>
 
-      <div className="nav-right">
-        <button title="Toggle theme" onClick={()=>setTheme(theme==='dark'?'light':'dark')} style={{marginRight:10,background:'transparent',border:'none',color:'var(--text)',cursor:'pointer'}}>
+      <div className="nav-right flex items-center gap-3">
+        <button title="Toggle theme" onClick={()=>setTheme(theme==='dark'?'light':'dark')} className="btn-ghost" aria-label="Toggle theme">
           {theme==='dark' ? '☀️' : '🌙'}
         </button>
         <div className="icon-btn" title="Notifications" onClick={clearNotifications}>
           <Icon name="bell" />
           {unread>0 && <span className="badge">{unread}</span>}
         </div>
-  <Link to="/messages" className="icon-btn" title="Messages"><Icon name="message" />{unreadMsgs>0 && <span className="badge">{unreadMsgs}</span>}</Link>
+        <Link to="/messages" className="icon-btn" title="Messages"><Icon name="message" />{unreadMsgs>0 && <span className="badge">{unreadMsgs}</span>}</Link>
         {profile && profile.avatar ? (
           <Link to="/profile"><img src={profile.avatar} alt="avatar" className="nav-avatar" /></Link>
         ) : (

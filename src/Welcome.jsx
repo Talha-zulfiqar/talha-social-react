@@ -9,10 +9,10 @@ export default function Welcome(){
     const u = sessionStorage.getItem('user')
     if (!u) return window.location.hash = '#/'
     setUser(u)
-    load()
+    loadFeedback()
   },[])
 
-  function load(){
+  function loadFeedback(){
     try{
       const raw = localStorage.getItem('feedbacks') || '[]'
       setList(JSON.parse(raw))
@@ -26,7 +26,7 @@ export default function Welcome(){
     items.push({ user, text: text.trim(), time: Date.now() })
     localStorage.setItem('feedbacks', JSON.stringify(items))
     setText('')
-    load()
+    loadFeedback()
     alert('Thanks for your feedback!')
   }
 

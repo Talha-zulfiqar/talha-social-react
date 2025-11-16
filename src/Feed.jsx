@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { fetchPostsOnce, createPost, uploadDataUrl, subscribePosts } from './firebase'
+import { createPost, uploadDataUrl } from './firebase'
+import { loadPosts } from './posts'
 
 function Avatar({name, src, size=40}){
-  if (src) return <img src={src} alt={name} style={{width:size,height:size,borderRadius:'50%'}} />
-  const initials = name.split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase()
-  return <div className="avatar" style={{width:size,height:size,fontSize:size/2}}>{initials}</div>
+  const s = {width:size,height:size,borderRadius:'50%'}
+  if (src) return <img src={src} alt={name} style={s} />
+  const initials = (name||'U').split(' ').map(s=>s[0]||'').join('').slice(0,2).toUpperCase()
+  return <div className="avatar" style={{width:size,height:size,fontSize:Math.max(12, size/2)}}>{initials}</div>
 }
 
 export default function Feed(){
@@ -13,38 +15,15 @@ export default function Feed(){
   const [text, setText] = useState('')
   const [image, setImage] = useState(null)
   const [lightbox, setLightbox] = useState(null)
+  // delegate post loading to shared helper to avoid name collisions and
+  // centralize remote/local/subscription logic
 
   useEffect(()=>{
     let mounted = true
-    async function load(){
-      try{
-        const remote = await fetchPostsOnce()
-        if(mounted && remote && remote.length){
-          setPosts(remote)
-          return
-        }
-      }catch(e){
-        // no firestore available or error
-      }
-
-      const raw = localStorage.getItem('posts')
-      const initial = raw? JSON.parse(raw) : [{id:1, author:'Alex', text:'Excited to share my latest project — built with React!', comments:[]},{id:2,author:'Mina',text:'Great article on frontend performance.',comments:[]}]
-      // ensure at least one image post exists so dashboard shows images for demo
-      const hasImage = initial.some(p => p.image)
-      if(!hasImage){
-        initial.unshift({ id: Date.now()-1000, author: 'Demo', text: 'Welcome — this is a demo image post.', image: '/assets/bg.svg', comments: [] })
-        localStorage.setItem('posts', JSON.stringify(initial))
-      }
-      if(mounted) setPosts(initial)
-      // try subscribing to remote posts if available
-      try{
-        const unsub = subscribePosts(p => { setPosts(p) })
-        return ()=>{ mounted=false; unsub && unsub() }
-      }catch(e){ mounted=false }
-    }
-    const maybe = load()
-    (async ()=>{ try{ await maybe }catch{} finally{ if(mounted) setLoading(false) } })()
-    return ()=>{ mounted=false }
+    let unsub = null
+  const maybe = loadPosts(setPosts);
+  (async ()=>{ try{ const res = await maybe; if(mounted && typeof res === 'function'){ unsub = res } }catch(e){} finally{ if(mounted) setLoading(false) } })()
+    return ()=>{ mounted=false; if(typeof unsub === 'function') unsub() }
   },[])
 
   function save(items){
@@ -89,7 +68,7 @@ export default function Feed(){
 
   return (
     <>
-    <div className="layout">
+    <div className="layout wrap">
       <aside className="left-column">
         <div className="sidebar-card">
           <h3 style={{marginTop:0}}>Profile</h3>
@@ -136,42 +115,43 @@ export default function Feed(){
 
           <div style={{display:'grid',gap:12,marginTop:18}}>
             {loading ? (
+              // show 3 skeleton items while loading
               <>
-              {/* show 3 skeleton items while loading */}
-              {[1,2,3].map(i=> (
-                <article key={'sk'+i} className="post-card">
-                  <div style={{display:'flex',gap:12,alignItems:'center'}}>
-                    <div className="skeleton skeleton-avatar" />
-                    <div style={{flex:1}}>
-                      <div className="skeleton skeleton-line" style={{width:'40%'}} />
-                      <div className="skeleton skeleton-line" style={{width:'30%',height:12}} />
+                {[1,2,3].map(i => (
+                  <article key={'sk'+i} className="post-card">
+                    <div style={{display:'flex',gap:12,alignItems:'center'}}>
+                      <div className="skeleton skeleton-avatar" />
+                      <div style={{flex:1}}>
+                        <div className="skeleton skeleton-line" style={{width:'40%'}} />
+                        <div className="skeleton skeleton-line" style={{width:'30%',height:12}} />
+                      </div>
                     </div>
-                  </div>
-                  <div style={{marginTop:10}}>
-                    <div className="skeleton skeleton-line" style={{width:'100%',height:16}} />
-                    <div className="skeleton skeleton-line" style={{width:'90%',height:16}} />
-                  </div>
-                </article>
-              ))}
+                    <div style={{marginTop:10}}>
+                      <div className="skeleton skeleton-line" style={{width:'100%',height:16}} />
+                      <div className="skeleton skeleton-line" style={{width:'90%',height:16}} />
+                    </div>
+                  </article>
+                ))}
               </>
             ) : (
-            posts.map(p => (
-              <article key={p.id} className="post-card">
-                <div style={{display:'flex',gap:12,alignItems:'center'}}>
-                  <Avatar name={p.author} src={p.avatar} />
-                  <div>
-                    <div style={{fontWeight:700}}>{p.author}</div>
-                    <div className="muted" style={{fontSize:12}}>{new Date(Number(p.id)).toLocaleString()}</div>
+              posts.map(p => (
+                <article key={p.id} className="post-card">
+                  <div style={{display:'flex',gap:12,alignItems:'center'}}>
+                    <Avatar name={p.author} src={p.avatar} />
+                    <div>
+                      <div style={{fontWeight:700}}>{p.author}</div>
+                      <div className="muted" style={{fontSize:12}}>{new Date(Number(p.id)).toLocaleString()}</div>
+                    </div>
                   </div>
-                </div>
-                <div style={{marginTop:10}}>{p.text}</div>
-                {p.image && <img src={p.image} alt="post" className="post-image" onClick={()=>setLightbox(p.image)} style={{cursor:'zoom-in'}} />}
+                  <div style={{marginTop:10}}>{p.text}</div>
+                  {p.image && <img src={p.image} alt="post" className="post-image" onClick={()=>setLightbox(p.image)} style={{cursor:'zoom-in'}} />}
 
-                <div style={{marginTop:10}}>
-                  <Comments comments={p.comments||[]} onAdd={(c)=>addComment(p.id,c)} />
-                </div>
-              </article>
-            ))}
+                  <div style={{marginTop:10}}>
+                    <Comments comments={p.comments||[]} onAdd={(c)=>addComment(p.id,c)} />
+                  </div>
+                </article>
+              ))
+            )}
           </div>
         </section>
       </main>
