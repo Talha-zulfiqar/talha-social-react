@@ -9,7 +9,28 @@ export async function loadPosts(setPosts){
   try{
     const remote = await fetchPostsOnce()
     if(remote && remote.length){
-      setPosts(remote)
+      // merge with local changes saved in localStorage so optimistic likes/comments
+      // applied while offline are not lost on refresh. We favor remote post fields
+      // but merge 'comments' and 'likedBy' arrays when present locally.
+      try{
+        const rawLocal = localStorage.getItem('posts')
+        const local = rawLocal ? JSON.parse(rawLocal) : []
+        const localMap = new Map((local||[]).map(p => [String(p.id), p]))
+        const merged = remote.map(r => {
+          const key = String(r.id)
+          const l = localMap.get(key)
+          if(!l) return r
+          const mergedComments = Array.isArray(r.comments) ? Array.from(new Map([...(r.comments||[]).map(c=>[c.id||JSON.stringify(c),c]), ...(l.comments||[]).map(c=>[c.id||JSON.stringify(c),c])]).values()) : (l.comments||[])
+          const rLiked = Array.isArray(r.likedBy) ? r.likedBy : []
+          const lLiked = Array.isArray(l.likedBy) ? l.likedBy : []
+          const likedSet = Array.from(new Set([...(rLiked||[]), ...(lLiked||[])]))
+          return { ...r, comments: mergedComments, likedBy: likedSet }
+        })
+        setPosts(merged)
+      }catch(e){
+        // if merging fails, fall back to remote as before
+        setPosts(remote)
+      }
     }
   }catch(e){
     // ignore and fall back to localStorage
