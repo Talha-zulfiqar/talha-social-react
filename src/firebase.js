@@ -130,10 +130,11 @@ export async function createPost({ author, text, image, avatar }){
 
 // comments as an array field on the post document for simple real-time
 // clients. Uses arrayUnion with serverTimestamp metadata.
-export async function addCommentToPost(postId, { author, text }){
+export async function addCommentToPost(postId, { id, author, text }){
   if(!db) throw new Error('Firestore not initialized')
   const postRef = doc(db, 'posts', String(postId))
-  await updateDoc(postRef, { comments: arrayUnion({ author, text, createdAt: serverTimestamp() }) })
+  // include client-generated id for reliable merging/deduplication
+  await updateDoc(postRef, { comments: arrayUnion({ id: id || null, author, text, createdAt: serverTimestamp() }) })
 }
 
 // Toggle like by user id using arrayUnion/arrayRemove. For demo purposes

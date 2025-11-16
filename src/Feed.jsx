@@ -63,12 +63,19 @@ export default function Feed(){
 
   async function addComment(postId, comment){
     const author = sessionStorage.getItem('user')||'You'
-    const localComment = {id:Date.now(), author, text:comment}
+    // generate a stable client-side id for the comment so merges/dedupe work reliably
+    let id = null
+    try{
+      if(typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') id = crypto.randomUUID()
+      else id = 'c-' + Date.now() + '-' + Math.floor(Math.random()*1000000)
+    }catch(e){ id = 'c-' + Date.now() + '-' + Math.floor(Math.random()*1000000) }
+
+    const localComment = {id, author, text:comment}
     const next = posts.map(p => p.id===postId ? {...p, comments:[...(p.comments||[]), localComment]} : p)
     save(next)
-    // try to persist to Firestore; fall back silently to localStorage
+    // try to persist to Firestore; include the client id for dedupe
     try{
-      await addCommentToPost(postId, { author, text: comment })
+      await addCommentToPost(postId, { id, author, text: comment })
     }catch(e){ /* ignore - offline fallback handled by localStorage */ }
   }
 
