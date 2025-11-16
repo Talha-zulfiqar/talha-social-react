@@ -84,6 +84,11 @@ input:focus, textarea:focus{box-shadow:var(--shadow-soft);outline:none;border-co
 .post-card{padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.04);transition:transform .18s cubic-bezier(.2,.9,.3,1), box-shadow .18s ease}
 .post-card:hover{box-shadow:var(--shadow-medium);transform:translateY(-4px)}
 
+/* post actions (likes/comments) */
+.post-actions{margin-top:8px}
+.action-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:transparent;cursor:pointer}
+.action-btn[aria-pressed="true"]{background:var(--primary);color:#fff;border-color:var(--primary)}
+
 .sidebar-card{padding:var(--space-3);border-radius:var(--radius-md);background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.02));box-shadow:var(--shadow-soft)}
 
 /* Responsive tweaks */

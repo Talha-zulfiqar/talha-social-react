@@ -62,7 +62,19 @@ export default function Feed(){
   }
 
   function addComment(postId, comment){
-    const next = posts.map(p => p.id===postId ? {...p, comments:[...p.comments, {id:Date.now(), author:sessionStorage.getItem('user')||'You', text:comment}]} : p)
+    const next = posts.map(p => p.id===postId ? {...p, comments:[...(p.comments||[]), {id:Date.now(), author:sessionStorage.getItem('user')||'You', text:comment}]} : p)
+    save(next)
+  }
+
+  function toggleLike(postId){
+    const me = sessionStorage.getItem('user') || 'You'
+    const next = posts.map(p => {
+      if(p.id!==postId) return p
+      const likedBy = Array.isArray(p.likedBy) ? [...p.likedBy] : []
+      const idx = likedBy.indexOf(me)
+      if(idx === -1){ likedBy.push(me) } else { likedBy.splice(idx,1) }
+      return { ...p, likedBy }
+    })
     save(next)
   }
 
@@ -147,6 +159,12 @@ export default function Feed(){
                   {p.image && <img src={p.image} alt="post" className="post-image" onClick={()=>setLightbox(p.image)} style={{cursor:'zoom-in'}} />}
 
                   <div style={{marginTop:10}}>
+                    <div className="post-actions" style={{display:'flex',gap:8,alignItems:'center'}}>
+                      <button className="action-btn" onClick={()=>toggleLike(p.id)} aria-pressed={Array.isArray(p.likedBy) && p.likedBy.includes(sessionStorage.getItem('user')||'You')}>
+                        👍
+                      </button>
+                      <div style={{fontSize:13}}>{(p.likedBy || []).length} like{(p.likedBy || []).length===1?'':'s'}</div>
+                    </div>
                     <Comments comments={p.comments||[]} onAdd={(c)=>addComment(p.id,c)} />
                   </div>
                 </article>
