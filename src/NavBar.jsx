@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import useTheme from './hooks/useTheme'
+import logo from './assets/logo.svg'
 import { Link, useNavigate } from 'react-router-dom'
 import { signOut as firebaseSignOut } from './firebase'
 
@@ -64,7 +65,10 @@ export default function NavBar(){
         <button className="hamburger" onClick={()=>setMenuOpen(p=>!p)} aria-label="menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
         </button>
-        <Link to="/feed" className="brand font-bold">Talha Social</Link>
+        <Link to="/feed" className="brand font-bold flex items-center gap-2">
+          <img src={logo} alt="Talha Social" className="h-8 w-auto" />
+          <span className="hidden sm:inline">Talha Social</span>
+        </Link>
         <div className="nav-shortcuts hidden md:flex items-center gap-2">
           <Link to="/feed" className="nav-short">Home</Link>
           <Link to="/watch" className="nav-short">Watch</Link>
