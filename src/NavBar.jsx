@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import useTheme from './hooks/useTheme'
-import logo from './assets/logo.svg'
-import { Link, useNavigate } from 'react-router-dom'
+import Logo from './components/Logo'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { signOut as firebaseSignOut } from './firebase'
 
 function Icon({name, size=18, className=''}){
@@ -53,6 +53,7 @@ export default function NavBar(){
   }
 
   const [theme, setTheme] = useTheme()
+  const location = useLocation()
 
   function clearNotifications(){
     localStorage.setItem('notifications','0')
@@ -60,47 +61,53 @@ export default function NavBar(){
   }
 
   return (
-    <nav className="navbar topbar flex items-center justify-between px-4">
-      <div className="nav-left flex items-center gap-3">
-        <button className="hamburger" onClick={()=>setMenuOpen(p=>!p)} aria-label="menu">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </button>
-        <Link to="/feed" className="brand font-bold flex items-center gap-2 h-full">
-          <div className="flex items-center h-full">
-            {/* smaller logo for tighter fit; responsive sizes */}
-            <img src={logo} alt="Talha Social" className="h-4 w-4 md:h-5 md:w-5 object-contain block" />
+    <nav className="topbar fixed left-0 right-0 top-0 h-16 z-60">
+      <div className="topbar-inner max-w-[1200px] mx-auto h-full flex items-center justify-between px-4">
+
+        {/* Left: hamburger + logo */}
+        <div className="nav-left flex items-center gap-3">
+          <button className="hamburger p-2" onClick={()=>setMenuOpen(p=>!p)} aria-label="menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
+          <div className="logo-container">
+            <Logo />
           </div>
-          <span className="ml-2 text-base leading-none hidden md:inline-block">Talha Social</span>
-        </Link>
-        <div className="nav-shortcuts hidden md:flex items-center gap-2">
-          <Link to="/feed" className="nav-short">Home</Link>
-          <Link to="/watch" className="nav-short">Watch</Link>
-          <Link to="/marketplace" className="nav-short">Marketplace</Link>
-          <Link to="/groups" className="nav-short">Groups</Link>
         </div>
-      </div>
 
-      <div className="nav-center flex-1 flex justify-center">
-        <div className="search-wrap w-full max-w-xl flex items-center gap-2"><Icon name="search" className="text-current" /><input className="search" placeholder="Search Talha Social" /></div>
-      </div>
-
-      <div className="nav-right flex items-center gap-3">
-        <button title="Toggle theme" onClick={()=>setTheme(theme==='dark'?'light':'dark')} className="btn-ghost" aria-label="Toggle theme">
-          {theme==='dark' ? '☀️' : '🌙'}
-        </button>
-        <div className="icon-btn" title="Notifications" onClick={clearNotifications}>
-          <Icon name="bell" />
-          {unread>0 && <span className="badge">{unread}</span>}
+        {/* Center: nav tabs (hidden on very small screens) */}
+        <div className="nav-center flex-1 flex justify-center">
+          <div className="nav-tabs hidden sm:flex items-center gap-4">
+            <Link to="/feed" className={`nav-tab ${location.pathname.startsWith('/feed') ? 'active' : ''}`}>Home</Link>
+            <Link to="/watch" className={`nav-tab ${location.pathname.startsWith('/watch') ? 'active' : ''}`}>Watch</Link>
+            <Link to="/marketplace" className={`nav-tab ${location.pathname.startsWith('/marketplace') ? 'active' : ''}`}>Marketplace</Link>
+            <Link to="/groups" className={`nav-tab ${location.pathname.startsWith('/groups') ? 'active' : ''}`}>Groups</Link>
+          </div>
         </div>
-        <Link to="/messages" className="icon-btn" title="Messages"><Icon name="message" />{unreadMsgs>0 && <span className="badge">{unreadMsgs}</span>}</Link>
-        {profile && profile.avatar ? (
-          <Link to="/profile"><img src={profile.avatar} alt="avatar" className="nav-avatar" /></Link>
-        ) : (
-          <Link to="/profile" className="avatar nav-avatar-fallback">{user.slice(0,2).toUpperCase()}</Link>
-        )}
-        <button onClick={logout} className="btn-logout">Logout</button>
-      </div>
 
+        {/* Right: actions */}
+        <div className="nav-right flex items-center gap-3">
+          <div className="search-wrap hidden md:flex items-center">
+            <Icon name="search" className="text-current mr-2" />
+            <input className="search" placeholder="Search" />
+          </div>
+
+          <button title="Toggle theme" onClick={()=>setTheme(theme==='dark'?'light':'dark')} className="btn-ghost" aria-label="Toggle theme">
+            {theme==='dark' ? '☀️' : '🌙'}
+          </button>
+          <button className="nav-action icon-btn" title="Notifications" onClick={clearNotifications}>
+            <Icon name="bell" />
+            {unread>0 && <span className="badge">{unread}</span>}
+          </button>
+          <Link to="/messages" className="nav-action icon-btn" title="Messages"><Icon name="message" />{unreadMsgs>0 && <span className="badge">{unreadMsgs}</span>}</Link>
+          {profile && profile.avatar ? (
+            <Link to="/profile" className="nav-action"><img src={profile.avatar} alt="avatar" className="nav-avatar" /></Link>
+          ) : (
+            <Link to="/profile" className="nav-action avatar nav-avatar-fallback">{user.slice(0,2).toUpperCase()}</Link>
+          )}
+          <button onClick={logout} className="nav-action btn-logout">Logout</button>
+        </div>
+
+      </div>
       {menuOpen && (
         <div className="mobile-menu">
           <Link to="/feed">Feed</Link>

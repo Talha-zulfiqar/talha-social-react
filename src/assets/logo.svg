@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Social App logo">
+  <rect width="240" height="240" rx="12" fill="#1E90FF" />
+  <g transform="translate(40,36) scale(0.8)" fill="#fff">
+    <path d="M90 16C64.9 16 44 36.9 44 62c0 12.9 5.1 24.6 13.5 33.4-1.1 6-4.6 18-6.2 23.2-0.6 2.3 1.5 4.4 3.7 3.8 8.2-2 29.8-7.2 39-11.1 8.8 2.2 18.1 3.4 27.6 3.4 25.1 0 46-20.9 46-46S115.1 16 90 16z"/>
+    <circle cx="58" cy="62" r="8" fill="#1E90FF"/>
+    <circle cx="90" cy="62" r="8" fill="#1E90FF"/>
+    <circle cx="122" cy="62" r="8" fill="#1E90FF"/>
+  </g>
+  <text x="120" y="200" text-anchor="middle" fill="#fff" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700">SOCIAL APP</text>
+</svg>

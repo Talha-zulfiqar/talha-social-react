@@ -25,14 +25,32 @@ input:focus, textarea:focus{box-shadow:var(--shadow-soft);outline:none;border-co
 .btn-logout{background:transparent;border:1px solid rgba(255,255,255,0.08);padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--card)}
 
 /* Navbar / Topbar */
-.topbar{position:fixed;left:0;right:0;top:0;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 var(--space-3);z-index:60}
+.topbar{position:fixed;left:0;right:0;top:0;height:64px;z-index:60;background:transparent}
+.topbar-inner{height:100%;display:flex;align-items:center;justify-content:space-between;padding:0 var(--space-3)}
 .nav-left{display:flex;align-items:center;gap:var(--space-2)}
 .nav-center{flex:1;display:flex;justify-content:center}
 .nav-right{display:flex;align-items:center;gap:var(--space-2)}
-.brand{font-weight:700;color:var(--card);text-decoration:none;font-size:18px}
-.nav-short{padding:6px 10px;border-radius:8px;color:var(--card);text-decoration:none;opacity:0.95}
-.search-wrap{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,0.06);width:100%;max-width:560px}
-.search{width:100%;max-width:520px;padding:8px 12px;border-radius:999px;border:none;background:transparent;color:var(--card)}
+
+/* Logo container - align icon + brand text */
+.logo-container{display:flex;align-items:center;gap:8px}
+.logo-container .logo-icon{width:36px;height:36px}
+.logo-icon-wrap{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center}
+@media (min-width:768px){
+	.logo-container .logo-icon{width:44px;height:44px}
+	.logo-icon-wrap{width:44px;height:44px}
+}
+.brand{font-weight:700;color:var(--card);text-decoration:none;font-size:16px;letter-spacing:0.2px}
+
+/* central tabs (Facebook/LinkedIn style) */
+.nav-tabs{display:flex;align-items:center;gap:8px}
+.nav-tab{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:600;font-size:14px}
+.nav-tab:hover{background:rgba(0,0,0,0.04);color:var(--text)}
+.nav-tab.active{background:var(--card);box-shadow:var(--shadow-soft);color:var(--text)}
+
+/* search */
+.search-wrap{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,0.04);width:100%;max-width:420px}
+.search{width:100%;max-width:380px;padding:6px 8px;border-radius:999px;border:none;background:transparent;color:var(--text)}
+
 .hamburger{display:none;border:none;background:transparent;font-size:20px;padding:6px;cursor:pointer;color:var(--card)}
 
 .icon-btn{position:relative;padding:8px;border-radius:10px;cursor:pointer;color:var(--card);background:transparent}
@@ -40,6 +58,22 @@ input:focus, textarea:focus{box-shadow:var(--shadow-soft);outline:none;border-co
 .nav-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;box-shadow:0 2px 6px rgba(2,6,23,0.12)}
 .nav-avatar-fallback{width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--card);color:var(--primary);text-decoration:none;border:1px solid rgba(0,0,0,0.06)}
 .mobile-menu{position:absolute;left:10px;top:58px;background:var(--card);padding:10px;border-radius:8px;box-shadow:var(--shadow-medium)}
+
+/* small tweaks for buttons */
+.btn-ghost{background:transparent;border:none;padding:6px;border-radius:8px;cursor:pointer}
+.btn-logout{background:transparent;border:1px solid rgba(0,0,0,0.06);padding:8px 10px;border-radius:8px;cursor:pointer}
+
+/* Unified nav action styling to match central nav tabs */
+.nav-action{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;color:var(--muted);text-decoration:none;background:transparent;font-weight:600;cursor:pointer;min-width:40px;min-height:40px;justify-content:center;position:relative}
+.nav-action:hover{background:rgba(0,0,0,0.04);color:var(--text)}
+.nav-action .badge{right:6px;top:4px}
+.nav-action img.nav-avatar{width:36px;height:36px;border-radius:50%;}
+
+/* Icon-only nav actions (notification/message) — fixed square for pixel-perfect alignment */
+.nav-action.icon-btn{width:44px;height:44px;padding:0;border-radius:10px;justify-content:center;display:inline-flex;align-items:center;box-sizing:border-box;line-height:0;font-size:0;overflow:hidden}
+.nav-action.icon-btn svg,.nav-action.icon-btn > svg{width:20px !important;height:20px !important;display:block}
+.nav-action.icon-btn .badge{right:-6px;top:-6px;transform:none}
+.nav-action.icon-btn .icon-btn{padding:0}
 
 /* Layout for feed page */
 .wrap{max-width:1200px;padding:var(--space-4);margin:72px auto 24px auto}
@@ -54,7 +88,14 @@ input:focus, textarea:focus{box-shadow:var(--shadow-soft);outline:none;border-co
 
 /* Responsive tweaks */
 @media (max-width:1000px){ .layout{grid-template-columns:200px 1fr} .right-column{display:none} }
-@media (max-width:720px){ .hamburger{display:inline-flex} .nav-shortcuts{display:none} .search{max-width:300px} .layout{grid-template-columns:1fr} .left-column{display:none} }
+@media (max-width:720px){
+	.hamburger{display:inline-flex}
+	.nav-shortcuts{display:none}
+	.search{max-width:240px}
+	.nav-tabs{display:none}
+	.layout{grid-template-columns:1fr}
+	.left-column{display:none}
+}
 
 /* Login hero */
 .login-card{display:flex;gap:var(--space-3);align-items:stretch}
