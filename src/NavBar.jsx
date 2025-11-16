@@ -67,7 +67,8 @@ export default function NavBar(){
         </button>
         <Link to="/feed" className="brand font-bold flex items-center gap-2 h-full">
           <div className="flex items-center h-full">
-            <img src={logo} alt="Talha Social" className="h-6 w-6 object-contain block" />
+            {/* smaller logo for tighter fit; responsive sizes */}
+            <img src={logo} alt="Talha Social" className="h-4 w-4 md:h-5 md:w-5 object-contain block" />
           </div>
           <span className="ml-2 text-base leading-none hidden md:inline-block">Talha Social</span>
         </Link>
