@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { createPost, uploadDataUrl } from './firebase'
+import { createPost, uploadDataUrl, fetchPostsOnce, addCommentToPost, toggleLikeOnPost } from './firebase'
 import { loadPosts } from './posts'
 
 function Avatar({name, src, size=40}){
@@ -61,12 +61,18 @@ export default function Feed(){
     })()
   }
 
-  function addComment(postId, comment){
-    const next = posts.map(p => p.id===postId ? {...p, comments:[...(p.comments||[]), {id:Date.now(), author:sessionStorage.getItem('user')||'You', text:comment}]} : p)
+  async function addComment(postId, comment){
+    const author = sessionStorage.getItem('user')||'You'
+    const localComment = {id:Date.now(), author, text:comment}
+    const next = posts.map(p => p.id===postId ? {...p, comments:[...(p.comments||[]), localComment]} : p)
     save(next)
+    // try to persist to Firestore; fall back silently to localStorage
+    try{
+      await addCommentToPost(postId, { author, text: comment })
+    }catch(e){ /* ignore - offline fallback handled by localStorage */ }
   }
 
-  function toggleLike(postId){
+  async function toggleLike(postId){
     const me = sessionStorage.getItem('user') || 'You'
     const next = posts.map(p => {
       if(p.id!==postId) return p
@@ -76,6 +82,9 @@ export default function Feed(){
       return { ...p, likedBy }
     })
     save(next)
+    try{
+      await toggleLikeOnPost(postId, me)
+    }catch(e){ /* ignore, keep local state */ }
   }
 
   return (

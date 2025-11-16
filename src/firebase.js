@@ -3,7 +3,7 @@
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js'
 import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut as fbSignOut, onAuthStateChanged as fbOnAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js'
-import { getFirestore, collection, getDocs, onSnapshot, addDoc, doc, setDoc, serverTimestamp, query, orderBy, where } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js'
+import { getFirestore, collection, getDocs, onSnapshot, addDoc, doc, setDoc, serverTimestamp, query, orderBy, where, updateDoc, arrayUnion, arrayRemove, getDoc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js'
 import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js'
 
 const firebaseConfig = {
@@ -128,6 +128,31 @@ export async function createPost({ author, text, image, avatar }){
   return refDoc.id
 }
 
+// comments as an array field on the post document for simple real-time
+// clients. Uses arrayUnion with serverTimestamp metadata.
+export async function addCommentToPost(postId, { author, text }){
+  if(!db) throw new Error('Firestore not initialized')
+  const postRef = doc(db, 'posts', String(postId))
+  await updateDoc(postRef, { comments: arrayUnion({ author, text, createdAt: serverTimestamp() }) })
+}
+
+// Toggle like by user id using arrayUnion/arrayRemove. For demo purposes
+// this keeps likedBy on the post document so realtime subscribers receive updates.
+export async function toggleLikeOnPost(postId, userId){
+  if(!db) throw new Error('Firestore not initialized')
+  const postRef = doc(db, 'posts', String(postId))
+  // read current document to decide action
+  const snap = await getDoc(postRef)
+  if(!snap.exists()) throw new Error('Post not found')
+  const data = snap.data() || {}
+  const likedBy = Array.isArray(data.likedBy) ? data.likedBy : []
+  if(likedBy.includes(userId)){
+    await updateDoc(postRef, { likedBy: arrayRemove(userId) })
+  }else{
+    await updateDoc(postRef, { likedBy: arrayUnion(userId) })
+  }
+}
+
 // Storage
 export async function uploadDataUrl(dataUrl, path='images'){
   if(!storage) throw new Error('Firebase storage not initialized')
@@ -179,4 +204,4 @@ export function onAuthStateChanged(callback){
   return fbOnAuthStateChanged(auth, user => callback(user))
 }
 
-export default { signInWithGooglePopup, fetchPostsOnce, subscribePosts, createPost, uploadDataUrl, setProfile, getProfile, sendMessage, fetchConversationMessages }
+export default { signInWithGooglePopup, fetchPostsOnce, subscribePosts, createPost, uploadDataUrl, setProfile, getProfile, sendMessage, fetchConversationMessages, addCommentToPost, toggleLikeOnPost }
