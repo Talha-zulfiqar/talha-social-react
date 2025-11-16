@@ -9,14 +9,13 @@ export async function loadPosts(setPosts){
   try{
     const remote = await fetchPostsOnce()
     if(remote && remote.length){
-      // merge with local changes saved in localStorage so optimistic likes/comments
-      // applied while offline are not lost on refresh. We favor remote post fields
-      // but merge 'comments' and 'likedBy' arrays when present locally.
+      // merge local optimistic changes (localStorage) with remote posts
       try{
         const rawLocal = localStorage.getItem('posts')
         const local = rawLocal ? JSON.parse(rawLocal) : []
         const localMap = new Map((local||[]).map(p => [String(p.id), p]))
-        const merged = remote.map(r => {
+        // merge remote posts with local entries when ids match
+        const mergedRemote = remote.map(r => {
           const key = String(r.id)
           const l = localMap.get(key)
           if(!l) return r
@@ -26,7 +25,11 @@ export async function loadPosts(setPosts){
           const likedSet = Array.from(new Set([...(rLiked||[]), ...(lLiked||[])]))
           return { ...r, comments: mergedComments, likedBy: likedSet }
         })
-        setPosts(merged)
+        // include any local-only posts (not present in remote) at the top
+        const remoteIds = new Set(remote.map(r => String(r.id)))
+        const localOnly = (local||[]).filter(p => !remoteIds.has(String(p.id)))
+        const final = [...localOnly, ...mergedRemote]
+        setPosts(final)
       }catch(e){
         // if merging fails, fall back to remote as before
         setPosts(remote)
@@ -55,7 +58,30 @@ export async function loadPosts(setPosts){
 
   // attempt realtime subscription, return unsubscribe function if available
   try{
-    const unsub = subscribePosts(p => { setPosts(p) })
+    const unsub = subscribePosts(async remotePosts => {
+      try{
+        // try to merge remote snapshot with any local optimistic changes
+        const rawLocal = localStorage.getItem('posts')
+        const local = rawLocal ? JSON.parse(rawLocal) : []
+        const localMap = new Map((local||[]).map(p => [String(p.id), p]))
+        const mergedRemote = remotePosts.map(r => {
+          const key = String(r.id)
+          const l = localMap.get(key)
+          if(!l) return r
+          const mergedComments = Array.isArray(r.comments) ? Array.from(new Map([...(r.comments||[]).map(c=>[c.id||JSON.stringify(c),c]), ...(l.comments||[]).map(c=>[c.id||JSON.stringify(c),c])]).values()) : (l.comments||[])
+          const rLiked = Array.isArray(r.likedBy) ? r.likedBy : []
+          const lLiked = Array.isArray(l.likedBy) ? l.likedBy : []
+          const likedSet = Array.from(new Set([...(rLiked||[]), ...(lLiked||[])]))
+          return { ...r, comments: mergedComments, likedBy: likedSet }
+        })
+        const remoteIds = new Set(remotePosts.map(r => String(r.id)))
+        const localOnly = (local||[]).filter(p => !remoteIds.has(String(p.id)))
+        setPosts([...localOnly, ...mergedRemote])
+      }catch(err){
+        // fallback to raw remote posts
+        setPosts(remotePosts)
+      }
+    })
     return unsub
   }catch(e){
     console.debug('posts.loadPosts: subscribePosts failed', e && e.message)
